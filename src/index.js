@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import { Amplify } from 'aws-amplify';
-import awsmobile from './aws-exports';
-Amplify.configure(awsmobile);
+import config from './aws-exports';
+Amplify.configure(config);
 ReactDOM.render(
   <React.StrictMode>
     <App />
