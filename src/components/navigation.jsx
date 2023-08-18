@@ -1,6 +1,6 @@
 import React from "react";
-
-export const Navigation = (props) => {
+import { Link } from "react-router-dom";
+export const Navigation = ({ signOut }) => {
   return (
     <nav id="menu" className="navbar navbar-default navbar-fixed-top">
       <div className="container">
@@ -18,7 +18,7 @@ export const Navigation = (props) => {
             <span className="icon-bar"></span>{" "}
           </button>
           <a className="navbar-brand page-scroll" href="#page-top">
-            React Landing Page
+            GatherHub
           </a>{" "}
         </div>
 
@@ -62,8 +62,9 @@ export const Navigation = (props) => {
                 Contact
               </a>
             </li>
-            <li>
-              <button>Sumbit</button>
+            <li style={{ padding: "8px" }}>
+              <button className="nav-button" onClick={signOut}>
+                Sign Out</button>
             </li>
           </ul>
         </div>

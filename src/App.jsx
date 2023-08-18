@@ -11,13 +11,17 @@ import { Contact } from "./components/contact";
 import JsonData from "./data/data.json";
 import SmoothScroll from "smooth-scroll";
 import "./App.css";
+import "@aws-amplify/ui-react/styles.css";
+import {
+  withAuthenticator,
+} from "@aws-amplify/ui-react";
 
 export const scroll = new SmoothScroll('a[href*="#"]', {
   speed: 1000,
   speedAsDuration: true,
 });
 
-const App = () => {
+const App = ({ signOut }) => {
   const [landingPageData, setLandingPageData] = useState({});
   useEffect(() => {
     setLandingPageData(JsonData);
@@ -25,7 +29,7 @@ const App = () => {
 
   return (
     <div>
-      <Navigation />
+      <Navigation signOut={signOut} />
       <Header data={landingPageData.Header} />
       <Features data={landingPageData.Features} />
       <About data={landingPageData.About} />
@@ -38,4 +42,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default withAuthenticator(App);
