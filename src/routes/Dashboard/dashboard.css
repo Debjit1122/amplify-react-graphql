@@ -1,6 +1,7 @@
 .dashboard-container {
     display: flex;
     flex-direction: row;
+    overflow-y: hidden;
 }
 .dashboard-body {
     flex: 1;
@@ -91,22 +92,26 @@ th {
     letter-spacing: 0.035em;
     border-bottom: 0.05rem solid rgb(240, 242, 245);
 }
+
 tbody {
-    display: table-row-group;
+    display: table-row-group; /* Add this line */
 }
-tr, thead {
+
+tr {
     color: inherit;
-    display: table-row;
+    display: table-row; /* Change this line */
     vertical-align: middle;
     outline: 0px;
 }
+
 td {
-    text-align: left;
+    text-align: left; /* Add this line */
     padding: 12px 24px;
     background: transparent;
     box-shadow: none;
     border-bottom: 0.05rem solid rgb(240, 242, 245);
 }
+
 td div {
     display: flex;
     flex-direction: row;

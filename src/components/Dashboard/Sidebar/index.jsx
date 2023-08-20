@@ -43,7 +43,7 @@ function SideBar({ menu, signOut }) {
 
                     <div className='sidebar-footer'>
                         <span className='sidebar-item-label'>Logout</span>
-                        <button style={{ background: "transparent" }} onClick={signOut}>
+                        <button style={{ background: "transparent", border: "none" }} onClick={signOut}>
                             <img
                                 src={LogoutIcon}
                                 alt='icon-logout'
