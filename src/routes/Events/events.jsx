@@ -15,10 +15,13 @@ const Events = ({ signOut }) => {
 
     return (
         <div>
-            <button className="btn btn-primary position-relative" style={{ left: "90%", top: "12px" }} onClick={signOut}>
-                Sign Out
-            </button>
-            <View margin="50px" padding="20px" boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px" borderRadius="5px">
+            <div style={{ display: "flex", justifyContent: "end", margin: "20px" }}>
+                <button className="btn btn-primary position-relative" onClick={signOut}>
+                    Sign Out
+                </button>
+            </div>
+
+            <View margin="50px 20px" padding="20px" boxShadow="rgba(0, 0, 0, 0.24) 0px 3px 8px" borderRadius="5px">
                 {/* Assume CreateEventCreateForm renders a form with onSubmit */}
                 <CreateEventCreateForm onSubmit={handleSubmit} />
             </View>
