@@ -1,0 +1,19 @@
+type CreateEvent @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  description: String
+  detailedInfo: String
+  Country: String
+  mode: String
+  type: String
+  dateTime: AWSDateTime
+  venue: String
+  orgName: String
+  orgEmail: AWSEmail
+  orgPhone: AWSPhone
+  endDate: AWSDate
+  ticketPrice: Float
+  orgDesc: String
+  orgAddress: String
+}
+ 

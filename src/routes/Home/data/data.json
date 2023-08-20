@@ -1,0 +1,112 @@
+{
+  "Header": {
+    "title": "Dream Big and Plan Bigger, Together",
+    "paragraph": "We understand the excitement of crafting unforgettable events. Good news, now you can bring your vision to life with us! Our platform is designed to make event hosting, ticketing, and management a breeze – and it's all completely free!"
+  },
+  "About": {
+    "paragraph": "We're on a mission to simplify event planning. Our user-friendly platform takes the hassle out of organizing, ticketing, and managing events. Whether you're hosting a small get-together or a large conference, we're here to streamline the process and make your event a success. Join us in making event management effortless and enjoyable.",
+    "Why": [
+      "Simplicity at it's best",
+      "Comprehensive event management",
+      "Completely free of cost"
+    ],
+    "Why2": [
+      "Continuous Improvement",
+      "Responsive Support"
+    ]
+  },
+  "Features": [
+    {
+      "icon": "fa fa-calendar",
+      "name": "Event Creation",
+      "text": " Easily create and set up new events with all relevant details, such as event name, date, time, venue, description and much more."
+    },
+    {
+      "icon": "fa fa-list-ul",
+      "name": "Multi-Event Support",
+      "text": "Manage multiple events simultaneously, with a clear overview of each event's details and status."
+    },
+    {
+      "icon": "fa fa-ticket",
+      "name": "Ticketing",
+      "text": "Set up ticket types, pricing, and availability. Allow attendees to purchase tickets online, facilitating seamless entry to your event."
+    },
+    {
+      "icon": "fa fa-group",
+      "name": "Attendee Management",
+      "text": "Keep track of attendees, including their contact information and ticket details. Update or modify attendee information as needed."
+    },
+    {
+      "icon": "fa fa-bell",
+      "name": "Session Reminders",
+      "text": "Enhance attendee engagement and participation with session reminders. Notify attendees of upcoming sessions to keep them informed."
+    },
+    {
+      "icon": "fa fa-file-o",
+      "name": "Feedback Surveys",
+      "text": "Gather valuable post-event feedback through surveys. Understand attendee experiences and areas for improvement."
+    }
+  ],
+  "Testimonials": [
+    {
+      "img": "img/testimonials/01.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "John Doe"
+    },
+    {
+      "img": "img/testimonials/02.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "Johnathan Doe"
+    },
+    {
+      "img": "img/testimonials/03.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "John Doe"
+    },
+    {
+      "img": "img/testimonials/04.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "Johnathan Doe"
+    },
+    {
+      "img": "img/testimonials/05.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "John Doe"
+    },
+    {
+      "img": "img/testimonials/06.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "Johnathan Doe"
+    }
+  ],
+  "Contact": {
+    "address": "4321 California St, San Francisco, CA 12345 ",
+    "phone": "+1 123 456 1234",
+    "email": "info@company.com",
+    "facebook": "fb.com",
+    "twitter": "twitter.com",
+    "youtube": "youtube.com"
+  },
+  "HowTo": [
+    {
+      "icon": "fa fa-check-square-o",
+      "title": "Create an account",
+      "text": "It is quick and hassle-free – get started in just a few simple steps!"
+    },
+    {
+      "icon": "fa fa-calendar",
+      "title": "Add an upcoming event",
+      "text": "Easily create your event by filling out the form with all details and submitting."
+    },
+    {
+      "icon": "fa fa-ticket",
+      "title": "Sell Tickets",
+      "text": "Sell your event tickets online with ease, share your ticketing link with attendees, manage pricing and availability."
+    },
+    {
+      "icon": "fa fa-group",
+      "title": "Manage your attendees",
+      "text": "Effortlessly track attendees, update attendee information, and remove entries when necessary."
+    }
+  ]
+}
