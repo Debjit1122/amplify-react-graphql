@@ -5,7 +5,7 @@ import { About } from "../../components/Home/about";
 import { Features } from "../../components/Home/features";
 import { Testimonials } from "../../components/Home/testimonials";
 import { Contact } from "../../components/Home/contact";
-import JsonData from "../../data/data.json";
+import JsonData from "./data/data.json";
 import SmoothScroll from "smooth-scroll"; // Make sure you have installed the smooth-scroll library
 import "./Home.css";
 import { Link } from "react-router-dom";
