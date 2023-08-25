@@ -3,7 +3,7 @@ const all_attendees = [
         id: "#1236",
         date: "1 Nov, 10:20 AM",
         email: "michael.lawson@reqres.in",
-        first_name: "Michael",
+        first_name: "test",
         last_name: "Lawson",
         avatar: "https://reqres.in/img/faces/7-image.jpg",
         event: "Phone Case Pink  x 2",
