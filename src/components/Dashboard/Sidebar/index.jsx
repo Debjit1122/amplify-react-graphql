@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
+import { FaTimes } from 'react-icons/fa';
 import SideBarItem from './sidebar-item';
 import LogoutIcon from '../../../assets/icons/logout.svg';
+import logoTransparent from "../../../assets/images/logo-transparent.png"
 
-function SideBar({ menu, signOut }) {
+function SideBar({ menu, signOut, open, closeSidebar }) {
     const location = useLocation();
 
     const [active, setActive] = useState(1);
@@ -15,45 +16,38 @@ function SideBar({ menu, signOut }) {
                 setActive(element.id);
             }
         });
-    }, [location.pathname])
+    }, [location.pathname]);
 
     const __navigate = (id) => {
         setActive(id);
-    }
+    };
 
     return (
-        <nav className='sidebar'>
+        <nav className={`sidebar ${open ? 'open' : 'closed'}`}>
             <div className='sidebar-container'>
-                <div className='sidebar-logo-container'>
-                    <div className="logo">
-                        GATHERHUB
-                    </div>
+                <div className='sidebar-toggle-button' onClick={closeSidebar}>
+                    <FaTimes size={18} />
+                </div>
+                <div className='sidebar-logo-container d-flex'>
+                    <img src={logoTransparent} alt="" />
                 </div>
 
-                <div className='sidebar-container'>
-                    <div className='sidebar-items'>
-                        {menu.map((item, index) => (
-                            <div key={index} onClick={() => __navigate(item.id)}>
-                                <SideBarItem
-                                    active={item.id === active}
-                                    item={item} />
-                            </div>
-                        ))}
-                    </div>
+                <div className='sidebar-items'>
+                    {menu.map((item, index) => (
+                        <div key={index} onClick={() => __navigate(item.id)}>
+                            <SideBarItem
+                                active={item.id === active}
+                                item={item} />
+                        </div>
+                    ))}
+                </div>
 
-                    <div className='sidebar-footer'>
-                        <span className='sidebar-item-label'>Logout</span>
-                        <button style={{ background: "transparent", border: "none" }} onClick={signOut}>
-                            <img
-                                src={LogoutIcon}
-                                alt='icon-logout'
-                                className='sidebar-item-icon' />
-                        </button>
-                    </div>
+                <div className='sidebar-footer'>
+                    <span className='sidebar-item-label'>Logout</span>
                 </div>
             </div>
         </nav>
-    )
+    );
 }
 
 export default SideBar;

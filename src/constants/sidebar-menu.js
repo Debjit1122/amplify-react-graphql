@@ -15,6 +15,12 @@ const sidebar_menu = [
         path: '/dashboard/attendees',
         title: 'Attendees',
     },
+    {
+        id: 3,
+        icon: UserIcon,
+        path: '/dashboard/events',
+        title: 'Events',
+    }
 ];
 
 export default sidebar_menu;

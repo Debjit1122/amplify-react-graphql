@@ -14,4 +14,34 @@ code {
     monospace;
 }
 
+.btn-primary {
+    background: hsl(190, 100%, 20%);
+    border: none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
 
+.btn-primary:hover {
+    background: hsl(210, 25%, 25%);
+}
+
+.btn-primary:active{
+    background: hsl(210, 25%, 25%) !important;
+}
+
+.btn-outline-primary {
+  border: 2px solid hsl(190, 100%, 20%);
+  color: hsl(190, 100%, 20%);
+  font-weight: 600;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.btn-outline-primary:hover {
+  background: hsl(190, 100%, 20%);
+  color: #fff;
+  font-weight: 600;
+  border: hsl(190, 100%, 20%);
+}
+
+.btn-outline-primary:active {
+  background: hsl(190, 100%, 20%) !important;
+}

@@ -4,8 +4,8 @@ import { schema } from './schema';
 
 
 
-const { CreateEvent } = initSchema(schema);
+const { Events } = initSchema(schema);
 
 export {
-  CreateEvent
+  Events
 };

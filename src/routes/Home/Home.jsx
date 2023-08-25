@@ -10,6 +10,7 @@ import SmoothScroll from "smooth-scroll"; // Make sure you have installed the sm
 import "./Home.css";
 import { Link } from "react-router-dom";
 import { RiMenu3Fill } from "react-icons/ri"
+import logo from "../../assets/images/logo.png"
 
 // Initialize Smooth Scroll with options
 const scroll = new SmoothScroll('a[href*="#"]', {
@@ -28,9 +29,11 @@ const Home = () => {
         <div>
             <nav className="navbar fixed-top navbar-expand-lg nanbar-light bg-light">
                 <div className="container-fluid">
-                    <a className="navbar-brand" href="/">GATHERHUB</a>
+                    <a className="navbar-brand" href="/">
+                        <img src={logo} alt="" />
+                    </a>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <RiMenu3Fill size={30} />
+                        <RiMenu3Fill size={30} style={{ color: "hsl(190, 100%, 20%)" }} />
                     </button>
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav">
@@ -46,6 +49,9 @@ const Home = () => {
                             <li className="nav-item mx-3 mt-1">
                                 <Link to="/create-event">
                                     <button className="btn btn-primary">Get Started</button>
+                                </Link>
+                                <Link to="/dashboard" className="mx-3">
+                                    <button className="btn btn-outline-primary">Log in</button>
                                 </Link>
                             </li>
                         </ul>

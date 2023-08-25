@@ -1,19 +1,50 @@
-type CreateEvent @model @auth(rules: [{allow: public}]) {
+type Events @model @auth(rules: [{allow: public}]) {
   id: ID!
-  name: String
-  description: String
-  detailedInfo: String
-  Country: String
-  mode: String
-  type: String
-  dateTime: AWSDateTime
-  venue: String
+  eventTitle: String
+  eventType: String
+  eventCategory: String
+  eventTags: String
+  eventStartDate: AWSDate
+  eventStartTime: AWSTime
+  eventDesc: String
+  eventAgenda: String
+  eventSpeakers: String
+  eventEndDate: AWSDate
+  eventEndTime: AWSTime
+  eventTimeZone: String
+  eventVenueName: String
+  eventCountry: String
+  eventStreetAddress: String
+  eventCity: String
+  eventState: String
+  eventZipCode: Int
+  eventTicketQuantity: Int
+  eventTicketCurrency: String
+  eventTicketPrice: Float
+  eventTicketSaleStart: AWSDateTime
+  eventTicketSaleEnd: AWSDateTime
+  promoLinkedin: String
+  promoTwitter: AWSURL
+  promoFacebook: AWSURL
+  promoInstagram: AWSURL
+  promoDiscord: AWSURL
+  promoDiscountType: String
+  promoDiscountAmount: Float
+  promoDiscountCode: String
+  promoDiscountExpiration: AWSDateTime
   orgName: String
   orgEmail: AWSEmail
+  orgCountryCode: String
   orgPhone: AWSPhone
-  endDate: AWSDate
-  ticketPrice: Float
-  orgDesc: String
-  orgAddress: String
+  orgWebsite: AWSURL
+  eventCodeofConduct: String
+  eventLogo: String
+  eventImage: String
+  eventVirtualURL: AWSURL
+  eventCreatorUser: String
+  eventCreatorName: String
+  eventCreatorImage: String
+  eventCreatorBio: String
+  eventCreatorHeadline: String
 }
  

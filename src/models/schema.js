@@ -1,7 +1,7 @@
 export const schema = {
     "models": {
-        "CreateEvent": {
-            "name": "CreateEvent",
+        "Events": {
+            "name": "Events",
             "fields": {
                 "id": {
                     "name": "id",
@@ -10,59 +10,227 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "name": {
-                    "name": "name",
+                "eventTitle": {
+                    "name": "eventTitle",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "description": {
-                    "name": "description",
+                "eventType": {
+                    "name": "eventType",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "detailedInfo": {
-                    "name": "detailedInfo",
+                "eventCategory": {
+                    "name": "eventCategory",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "Country": {
-                    "name": "Country",
+                "eventTags": {
+                    "name": "eventTags",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "mode": {
-                    "name": "mode",
+                "eventStartDate": {
+                    "name": "eventStartDate",
+                    "isArray": false,
+                    "type": "AWSDate",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventStartTime": {
+                    "name": "eventStartTime",
+                    "isArray": false,
+                    "type": "AWSTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventDesc": {
+                    "name": "eventDesc",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "type": {
-                    "name": "type",
+                "eventAgenda": {
+                    "name": "eventAgenda",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "dateTime": {
-                    "name": "dateTime",
+                "eventSpeakers": {
+                    "name": "eventSpeakers",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventEndDate": {
+                    "name": "eventEndDate",
+                    "isArray": false,
+                    "type": "AWSDate",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventEndTime": {
+                    "name": "eventEndTime",
+                    "isArray": false,
+                    "type": "AWSTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventTimeZone": {
+                    "name": "eventTimeZone",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventVenueName": {
+                    "name": "eventVenueName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCountry": {
+                    "name": "eventCountry",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventStreetAddress": {
+                    "name": "eventStreetAddress",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCity": {
+                    "name": "eventCity",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventState": {
+                    "name": "eventState",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventZipCode": {
+                    "name": "eventZipCode",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventTicketQuantity": {
+                    "name": "eventTicketQuantity",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventTicketCurrency": {
+                    "name": "eventTicketCurrency",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventTicketPrice": {
+                    "name": "eventTicketPrice",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventTicketSaleStart": {
+                    "name": "eventTicketSaleStart",
                     "isArray": false,
                     "type": "AWSDateTime",
                     "isRequired": false,
                     "attributes": []
                 },
-                "venue": {
-                    "name": "venue",
+                "eventTicketSaleEnd": {
+                    "name": "eventTicketSaleEnd",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoLinkedin": {
+                    "name": "promoLinkedin",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoTwitter": {
+                    "name": "promoTwitter",
+                    "isArray": false,
+                    "type": "AWSURL",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoFacebook": {
+                    "name": "promoFacebook",
+                    "isArray": false,
+                    "type": "AWSURL",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoInstagram": {
+                    "name": "promoInstagram",
+                    "isArray": false,
+                    "type": "AWSURL",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoDiscord": {
+                    "name": "promoDiscord",
+                    "isArray": false,
+                    "type": "AWSURL",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoDiscountType": {
+                    "name": "promoDiscountType",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoDiscountAmount": {
+                    "name": "promoDiscountAmount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoDiscountCode": {
+                    "name": "promoDiscountCode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "promoDiscountExpiration": {
+                    "name": "promoDiscountExpiration",
+                    "isArray": false,
+                    "type": "AWSDateTime",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -80,6 +248,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "orgCountryCode": {
+                    "name": "orgCountryCode",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "orgPhone": {
                     "name": "orgPhone",
                     "isArray": false,
@@ -87,29 +262,71 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "endDate": {
-                    "name": "endDate",
+                "orgWebsite": {
+                    "name": "orgWebsite",
                     "isArray": false,
-                    "type": "AWSDate",
+                    "type": "AWSURL",
                     "isRequired": false,
                     "attributes": []
                 },
-                "ticketPrice": {
-                    "name": "ticketPrice",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "orgDesc": {
-                    "name": "orgDesc",
+                "eventCodeofConduct": {
+                    "name": "eventCodeofConduct",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
-                "orgAddress": {
-                    "name": "orgAddress",
+                "eventLogo": {
+                    "name": "eventLogo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventImage": {
+                    "name": "eventImage",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventVirtualURL": {
+                    "name": "eventVirtualURL",
+                    "isArray": false,
+                    "type": "AWSURL",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCreatorUser": {
+                    "name": "eventCreatorUser",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCreatorName": {
+                    "name": "eventCreatorName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCreatorImage": {
+                    "name": "eventCreatorImage",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCreatorBio": {
+                    "name": "eventCreatorBio",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventCreatorHeadline": {
+                    "name": "eventCreatorHeadline",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -133,7 +350,7 @@ export const schema = {
                 }
             },
             "syncable": true,
-            "pluralName": "CreateEvents",
+            "pluralName": "Events",
             "attributes": [
                 {
                     "type": "model",
@@ -161,5 +378,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "ab47101a7e77a50529a92a7481f36adb"
+    "version": "2562b4dc3688093d3d754ad8b582dbd0"
 };
