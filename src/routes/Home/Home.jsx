@@ -47,7 +47,7 @@ const Home = () => {
                                 <a className="nav-link active" href="#testimonials">Testimonials</a>
                             </li>
                             <li className="nav-item mx-3 mt-1">
-                                <Link to="/create-event">
+                                <Link to="/event/create">
                                     <button className="btn btn-primary">Get Started</button>
                                 </Link>
                                 <Link to="/dashboard" className="mx-3">

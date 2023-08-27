@@ -236,13 +236,14 @@ td span {
     cursor: pointer;
 }
 .sidebar-item:hover {
+    color: #FFFFFF !important;
     background-color: hsl(210, 25%, 25%);
 }
 .sidebar-item-active {
     padding: 1.5em;
     padding-left: 2em;
     display: flex;
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     list-style: none;
     text-decoration: none;
     align-items: center;
@@ -254,7 +255,7 @@ td span {
     width: 20px;
 }
 .sidebar-item-label {
-    font-size: small;
+    font-size: 1rem;
     font-weight: 600;
     margin-left: 15px;
 }
@@ -266,6 +267,7 @@ td span {
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
+    font-size: 1.1em;
 }
 
 .dashboard-cards {

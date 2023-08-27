@@ -1,24 +1,12 @@
 import "@aws-amplify/ui-react/styles.css";
 import { EventsCreateForm } from "../../../ui-components"
+import { useNavigate } from "react-router-dom"; 
 import {
-    View,
     withAuthenticator
 } from "@aws-amplify/ui-react";
-import { Auth } from 'aws-amplify';
-import { useNavigate } from "react-router-dom"; // Import useNavigate for redirection
-
-const Events = ({ signOut }) => {
-    async function currentAuthenticatedUser() {
-        try {
-            const user = await Auth.currentAuthenticatedUser({
-                bypassCache: false // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
-            });
-            console.log(user);
-        } catch (err) {
-            console.log(err);
-        }
-    };
-    currentAuthenticatedUser();
+const EventCreate = ({ signOut }) => {
+    const navigate = useNavigate();
+    
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "end", margin: "20px" }}>
@@ -27,9 +15,9 @@ const Events = ({ signOut }) => {
                 </button>
             </div>
             {/* Assume CreateEventCreateForm renders a form with onSubmit */}
-            <EventsCreateForm />
+            <EventsCreateForm onSuccess={() => navigate("/dashboard")} />
         </div>
     );
 };
 
-export default withAuthenticator(Events);
+export default withAuthenticator(EventCreate);

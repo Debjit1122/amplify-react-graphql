@@ -12,8 +12,7 @@ function EventData() {
         async function fetchEvents() {
             try {
                 const { username } = await Auth.currentAuthenticatedUser();
-                console.log(username);
-                const eventsData = await DataStore.query(Events, (c) => c.eventCreatorUser.eq(username));
+                const eventsData = await DataStore.query(Events, (c) => c.owner.eq(username));
                 console.log(eventsData);
                 setEvents(eventsData);
                 setLoading(false);

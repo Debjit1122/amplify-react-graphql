@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DataStore } from 'aws-amplify';
+import { DataStore, Storage } from 'aws-amplify';
 import { Events } from '../../../../models';
 
 function AllEventData() {
@@ -11,7 +11,6 @@ function AllEventData() {
         async function fetchEvents() {
             try {
                 const eventsData = await DataStore.query(Events);
-                console.log(eventsData);
                 setEvents(eventsData);
                 setLoading(false);
             } catch (error) {

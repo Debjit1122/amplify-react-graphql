@@ -1,4 +1,25 @@
-type Events @model @auth(rules: [{allow: public}]) {
+type Attendees @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  attendeeName: String
+  attendeeAge: Int
+  attendeeDOB: AWSDate
+  attendeeGender: String
+  attendeeEmail: AWSEmail
+  attendeePhone: AWSPhone
+  attendeeStreetAddress: String
+  attendeeCity: String
+  attendeeState: String
+  attendeeZipCode: String
+  attendeeCountry: String
+  attendeeCompanyName: String
+  attendeeJobTitle: String
+  attendeeCompanySize: String
+  attendeeReferral: String
+  attendeeQuestions: String
+  Events: [Events] @manyToMany(relationName: "AttendeesEvents")
+}
+
+type Events @model @auth(rules: [{allow: owner}]) {
   id: ID!
   eventTitle: String
   eventType: String
@@ -41,10 +62,11 @@ type Events @model @auth(rules: [{allow: public}]) {
   eventLogo: String
   eventImage: String
   eventVirtualURL: AWSURL
-  eventCreatorUser: String
   eventCreatorName: String
   eventCreatorImage: String
   eventCreatorBio: String
   eventCreatorHeadline: String
+  owner: String
+  attendeess: [Attendees] @manyToMany(relationName: "AttendeesEvents")
 }
  

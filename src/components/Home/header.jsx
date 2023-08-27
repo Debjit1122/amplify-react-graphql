@@ -18,7 +18,7 @@ export const Header = (props) => {
                 <button
                   className="btn btn-primary btn-lg"
                 >
-                  <a href="/create-event" className="text-decoration-none text-white">Create Event</a>
+                  <a href="/event/create" className="text-decoration-none text-white">Create Event</a>
                 </button>
               </div>
             </div>

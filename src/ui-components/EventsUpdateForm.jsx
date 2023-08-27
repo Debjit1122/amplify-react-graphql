@@ -6,11 +6,181 @@
 
 /* eslint-disable */
 import * as React from "react";
-import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { Events } from "../models";
+import {
+  Autocomplete,
+  Badge,
+  Button,
+  Divider,
+  Flex,
+  Grid,
+  Icon,
+  ScrollView,
+  Text,
+  TextField,
+  useTheme,
+} from "@aws-amplify/ui-react";
+import {
+  getOverrideProps,
+  useDataStoreBinding,
+} from "@aws-amplify/ui-react/internal";
+import { Events, Attendees, AttendeesEvents } from "../models";
 import { fetchByPath, validateField } from "./utils";
 import { DataStore } from "aws-amplify";
+function ArrayField({
+  items = [],
+  onChange,
+  label,
+  inputFieldRef,
+  children,
+  hasError,
+  setFieldValue,
+  currentFieldValue,
+  defaultFieldValue,
+  lengthLimit,
+  getBadgeText,
+  runValidationTasks,
+  errorMessage,
+}) {
+  const labelElement = <Text>{label}</Text>;
+  const {
+    tokens: {
+      components: {
+        fieldmessages: { error: errorStyles },
+      },
+    },
+  } = useTheme();
+  const [selectedBadgeIndex, setSelectedBadgeIndex] = React.useState();
+  const [isEditing, setIsEditing] = React.useState();
+  React.useEffect(() => {
+    if (isEditing) {
+      inputFieldRef?.current?.focus();
+    }
+  }, [isEditing]);
+  const removeItem = async (removeIndex) => {
+    const newItems = items.filter((value, index) => index !== removeIndex);
+    await onChange(newItems);
+    setSelectedBadgeIndex(undefined);
+  };
+  const addItem = async () => {
+    const { hasError } = runValidationTasks();
+    if (
+      currentFieldValue !== undefined &&
+      currentFieldValue !== null &&
+      currentFieldValue !== "" &&
+      !hasError
+    ) {
+      const newItems = [...items];
+      if (selectedBadgeIndex !== undefined) {
+        newItems[selectedBadgeIndex] = currentFieldValue;
+        setSelectedBadgeIndex(undefined);
+      } else {
+        newItems.push(currentFieldValue);
+      }
+      await onChange(newItems);
+      setIsEditing(false);
+    }
+  };
+  const arraySection = (
+    <React.Fragment>
+      {!!items?.length && (
+        <ScrollView height="inherit" width="inherit" maxHeight={"7rem"}>
+          {items.map((value, index) => {
+            return (
+              <Badge
+                key={index}
+                style={{
+                  cursor: "pointer",
+                  alignItems: "center",
+                  marginRight: 3,
+                  marginTop: 3,
+                  backgroundColor:
+                    index === selectedBadgeIndex ? "#B8CEF9" : "",
+                }}
+                onClick={() => {
+                  setSelectedBadgeIndex(index);
+                  setFieldValue(items[index]);
+                  setIsEditing(true);
+                }}
+              >
+                {getBadgeText ? getBadgeText(value) : value.toString()}
+                <Icon
+                  style={{
+                    cursor: "pointer",
+                    paddingLeft: 3,
+                    width: 20,
+                    height: 20,
+                  }}
+                  viewBox={{ width: 20, height: 20 }}
+                  paths={[
+                    {
+                      d: "M10 10l5.09-5.09L10 10l5.09 5.09L10 10zm0 0L4.91 4.91 10 10l-5.09 5.09L10 10z",
+                      stroke: "black",
+                    },
+                  ]}
+                  ariaLabel="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeItem(index);
+                  }}
+                />
+              </Badge>
+            );
+          })}
+        </ScrollView>
+      )}
+      <Divider orientation="horizontal" marginTop={5} />
+    </React.Fragment>
+  );
+  if (lengthLimit !== undefined && items.length >= lengthLimit && !isEditing) {
+    return (
+      <React.Fragment>
+        {labelElement}
+        {arraySection}
+      </React.Fragment>
+    );
+  }
+  return (
+    <React.Fragment>
+      {labelElement}
+      {isEditing && children}
+      {!isEditing ? (
+        <>
+          <Button
+            onClick={() => {
+              setIsEditing(true);
+            }}
+          >
+            Add item
+          </Button>
+          {errorMessage && hasError && (
+            <Text color={errorStyles.color} fontSize={errorStyles.fontSize}>
+              {errorMessage}
+            </Text>
+          )}
+        </>
+      ) : (
+        <Flex justifyContent="flex-end">
+          {(currentFieldValue || isEditing) && (
+            <Button
+              children="Cancel"
+              type="button"
+              size="small"
+              onClick={() => {
+                setFieldValue(defaultFieldValue);
+                setIsEditing(false);
+                setSelectedBadgeIndex(undefined);
+              }}
+            ></Button>
+          )}
+          <Button size="small" variation="link" onClick={addItem}>
+            {selectedBadgeIndex !== undefined ? "Save" : "Add"}
+          </Button>
+        </Flex>
+      )}
+      {arraySection}
+    </React.Fragment>
+  );
+}
 export default function EventsUpdateForm(props) {
   const {
     id: idProp,
@@ -65,11 +235,12 @@ export default function EventsUpdateForm(props) {
     eventLogo: "",
     eventImage: "",
     eventVirtualURL: "",
-    eventCreatorUser: "",
     eventCreatorName: "",
     eventCreatorImage: "",
     eventCreatorBio: "",
     eventCreatorHeadline: "",
+    owner: "",
+    attendeess: [],
   };
   const [eventTitle, setEventTitle] = React.useState(initialValues.eventTitle);
   const [eventType, setEventType] = React.useState(initialValues.eventType);
@@ -170,9 +341,6 @@ export default function EventsUpdateForm(props) {
   const [eventVirtualURL, setEventVirtualURL] = React.useState(
     initialValues.eventVirtualURL
   );
-  const [eventCreatorUser, setEventCreatorUser] = React.useState(
-    initialValues.eventCreatorUser
-  );
   const [eventCreatorName, setEventCreatorName] = React.useState(
     initialValues.eventCreatorName
   );
@@ -185,10 +353,12 @@ export default function EventsUpdateForm(props) {
   const [eventCreatorHeadline, setEventCreatorHeadline] = React.useState(
     initialValues.eventCreatorHeadline
   );
+  const [owner, setOwner] = React.useState(initialValues.owner);
+  const [attendeess, setAttendeess] = React.useState(initialValues.attendeess);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = eventsRecord
-      ? { ...initialValues, ...eventsRecord }
+      ? { ...initialValues, ...eventsRecord, attendeess: linkedAttendeess }
       : initialValues;
     setEventTitle(cleanValues.eventTitle);
     setEventType(cleanValues.eventType);
@@ -231,24 +401,60 @@ export default function EventsUpdateForm(props) {
     setEventLogo(cleanValues.eventLogo);
     setEventImage(cleanValues.eventImage);
     setEventVirtualURL(cleanValues.eventVirtualURL);
-    setEventCreatorUser(cleanValues.eventCreatorUser);
     setEventCreatorName(cleanValues.eventCreatorName);
     setEventCreatorImage(cleanValues.eventCreatorImage);
     setEventCreatorBio(cleanValues.eventCreatorBio);
     setEventCreatorHeadline(cleanValues.eventCreatorHeadline);
+    setOwner(cleanValues.owner);
+    setAttendeess(cleanValues.attendeess ?? []);
+    setCurrentAttendeessValue(undefined);
+    setCurrentAttendeessDisplayValue("");
     setErrors({});
   };
   const [eventsRecord, setEventsRecord] = React.useState(eventsModelProp);
+  const [linkedAttendeess, setLinkedAttendeess] = React.useState([]);
+  const canUnlinkAttendeess = false;
   React.useEffect(() => {
     const queryData = async () => {
       const record = idProp
         ? await DataStore.query(Events, idProp)
         : eventsModelProp;
       setEventsRecord(record);
+      const linkedAttendeess = record
+        ? await Promise.all(
+            (
+              await record.attendeess.toArray()
+            ).map((r) => {
+              return r.attendees;
+            })
+          )
+        : [];
+      setLinkedAttendeess(linkedAttendeess);
     };
     queryData();
   }, [idProp, eventsModelProp]);
-  React.useEffect(resetStateValues, [eventsRecord]);
+  React.useEffect(resetStateValues, [eventsRecord, linkedAttendeess]);
+  const [currentAttendeessDisplayValue, setCurrentAttendeessDisplayValue] =
+    React.useState("");
+  const [currentAttendeessValue, setCurrentAttendeessValue] =
+    React.useState(undefined);
+  const attendeessRef = React.createRef();
+  const getIDValue = {
+    attendeess: (r) => JSON.stringify({ id: r?.id }),
+  };
+  const attendeessIdSet = new Set(
+    Array.isArray(attendeess)
+      ? attendeess.map((r) => getIDValue.attendeess?.(r))
+      : getIDValue.attendeess?.(attendeess)
+  );
+  const attendeesRecords = useDataStoreBinding({
+    type: "collection",
+    model: Attendees,
+  }).items;
+  const getDisplayValue = {
+    attendeess: (r) =>
+      `${r?.attendeeName ? r?.attendeeName + " - " : ""}${r?.id}`,
+  };
   const validations = {
     eventTitle: [],
     eventType: [],
@@ -291,11 +497,12 @@ export default function EventsUpdateForm(props) {
     eventLogo: [],
     eventImage: [],
     eventVirtualURL: [{ type: "URL" }],
-    eventCreatorUser: [],
     eventCreatorName: [],
     eventCreatorImage: [],
     eventCreatorBio: [],
     eventCreatorHeadline: [],
+    owner: [],
+    attendeess: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -381,24 +588,33 @@ export default function EventsUpdateForm(props) {
           eventLogo,
           eventImage,
           eventVirtualURL,
-          eventCreatorUser,
           eventCreatorName,
           eventCreatorImage,
           eventCreatorBio,
           eventCreatorHeadline,
+          owner,
+          attendeess,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
             if (Array.isArray(modelFields[fieldName])) {
               promises.push(
                 ...modelFields[fieldName].map((item) =>
-                  runValidationTasks(fieldName, item)
+                  runValidationTasks(
+                    fieldName,
+                    item,
+                    getDisplayValue[fieldName]
+                  )
                 )
               );
               return promises;
             }
             promises.push(
-              runValidationTasks(fieldName, modelFields[fieldName])
+              runValidationTasks(
+                fieldName,
+                modelFields[fieldName],
+                getDisplayValue[fieldName]
+              )
             );
             return promises;
           }, [])
@@ -415,11 +631,132 @@ export default function EventsUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await DataStore.save(
-            Events.copyOf(eventsRecord, (updated) => {
-              Object.assign(updated, modelFields);
-            })
+          const promises = [];
+          const attendeessToLinkMap = new Map();
+          const attendeessToUnLinkMap = new Map();
+          const attendeessMap = new Map();
+          const linkedAttendeessMap = new Map();
+          attendeess.forEach((r) => {
+            const count = attendeessMap.get(getIDValue.attendeess?.(r));
+            const newCount = count ? count + 1 : 1;
+            attendeessMap.set(getIDValue.attendeess?.(r), newCount);
+          });
+          linkedAttendeess.forEach((r) => {
+            const count = linkedAttendeessMap.get(getIDValue.attendeess?.(r));
+            const newCount = count ? count + 1 : 1;
+            linkedAttendeessMap.set(getIDValue.attendeess?.(r), newCount);
+          });
+          linkedAttendeessMap.forEach((count, id) => {
+            const newCount = attendeessMap.get(id);
+            if (newCount) {
+              const diffCount = count - newCount;
+              if (diffCount > 0) {
+                attendeessToUnLinkMap.set(id, diffCount);
+              }
+            } else {
+              attendeessToUnLinkMap.set(id, count);
+            }
+          });
+          attendeessMap.forEach((count, id) => {
+            const originalCount = linkedAttendeessMap.get(id);
+            if (originalCount) {
+              const diffCount = count - originalCount;
+              if (diffCount > 0) {
+                attendeessToLinkMap.set(id, diffCount);
+              }
+            } else {
+              attendeessToLinkMap.set(id, count);
+            }
+          });
+          attendeessToUnLinkMap.forEach(async (count, id) => {
+            const recordKeys = JSON.parse(id);
+            const attendeesEventsRecords = await DataStore.query(
+              AttendeesEvents,
+              (r) =>
+                r.and((r) => {
+                  return [
+                    r.attendeesId.eq(recordKeys.id),
+                    r.eventsId.eq(eventsRecord.id),
+                  ];
+                })
+            );
+            for (let i = 0; i < count; i++) {
+              promises.push(DataStore.delete(attendeesEventsRecords[i]));
+            }
+          });
+          attendeessToLinkMap.forEach((count, id) => {
+            const attendeesToLink = attendeesRecords.find((r) =>
+              Object.entries(JSON.parse(id)).every(
+                ([key, value]) => r[key] === value
+              )
+            );
+            for (let i = count; i > 0; i--) {
+              promises.push(
+                DataStore.save(
+                  new AttendeesEvents({
+                    events: eventsRecord,
+                    attendees: attendeesToLink,
+                  })
+                )
+              );
+            }
+          });
+          const modelFieldsToSave = {
+            eventTitle: modelFields.eventTitle,
+            eventType: modelFields.eventType,
+            eventCategory: modelFields.eventCategory,
+            eventTags: modelFields.eventTags,
+            eventStartDate: modelFields.eventStartDate,
+            eventStartTime: modelFields.eventStartTime,
+            eventDesc: modelFields.eventDesc,
+            eventAgenda: modelFields.eventAgenda,
+            eventSpeakers: modelFields.eventSpeakers,
+            eventEndDate: modelFields.eventEndDate,
+            eventEndTime: modelFields.eventEndTime,
+            eventTimeZone: modelFields.eventTimeZone,
+            eventVenueName: modelFields.eventVenueName,
+            eventCountry: modelFields.eventCountry,
+            eventStreetAddress: modelFields.eventStreetAddress,
+            eventCity: modelFields.eventCity,
+            eventState: modelFields.eventState,
+            eventZipCode: modelFields.eventZipCode,
+            eventTicketQuantity: modelFields.eventTicketQuantity,
+            eventTicketCurrency: modelFields.eventTicketCurrency,
+            eventTicketPrice: modelFields.eventTicketPrice,
+            eventTicketSaleStart: modelFields.eventTicketSaleStart,
+            eventTicketSaleEnd: modelFields.eventTicketSaleEnd,
+            promoLinkedin: modelFields.promoLinkedin,
+            promoTwitter: modelFields.promoTwitter,
+            promoFacebook: modelFields.promoFacebook,
+            promoInstagram: modelFields.promoInstagram,
+            promoDiscord: modelFields.promoDiscord,
+            promoDiscountType: modelFields.promoDiscountType,
+            promoDiscountAmount: modelFields.promoDiscountAmount,
+            promoDiscountCode: modelFields.promoDiscountCode,
+            promoDiscountExpiration: modelFields.promoDiscountExpiration,
+            orgName: modelFields.orgName,
+            orgEmail: modelFields.orgEmail,
+            orgCountryCode: modelFields.orgCountryCode,
+            orgPhone: modelFields.orgPhone,
+            orgWebsite: modelFields.orgWebsite,
+            eventCodeofConduct: modelFields.eventCodeofConduct,
+            eventLogo: modelFields.eventLogo,
+            eventImage: modelFields.eventImage,
+            eventVirtualURL: modelFields.eventVirtualURL,
+            eventCreatorName: modelFields.eventCreatorName,
+            eventCreatorImage: modelFields.eventCreatorImage,
+            eventCreatorBio: modelFields.eventCreatorBio,
+            eventCreatorHeadline: modelFields.eventCreatorHeadline,
+            owner: modelFields.owner,
+          };
+          promises.push(
+            DataStore.save(
+              Events.copyOf(eventsRecord, (updated) => {
+                Object.assign(updated, modelFieldsToSave);
+              })
+            )
           );
+          await Promise.all(promises);
           if (onSuccess) {
             onSuccess(modelFields);
           }
@@ -482,11 +819,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTitle ?? value;
@@ -551,11 +889,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventType ?? value;
@@ -620,11 +959,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCategory ?? value;
@@ -689,11 +1029,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTags ?? value;
@@ -759,11 +1100,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventStartDate ?? value;
@@ -829,11 +1171,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventStartTime ?? value;
@@ -898,11 +1241,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventDesc ?? value;
@@ -967,11 +1311,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventAgenda ?? value;
@@ -1036,11 +1381,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventSpeakers ?? value;
@@ -1106,11 +1452,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventEndDate ?? value;
@@ -1176,11 +1523,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventEndTime ?? value;
@@ -1245,11 +1593,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTimeZone ?? value;
@@ -1314,11 +1663,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventVenueName ?? value;
@@ -1383,11 +1733,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCountry ?? value;
@@ -1452,11 +1803,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventStreetAddress ?? value;
@@ -1523,11 +1875,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCity ?? value;
@@ -1592,11 +1945,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventState ?? value;
@@ -1665,11 +2019,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventZipCode ?? value;
@@ -1738,11 +2093,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTicketQuantity ?? value;
@@ -1809,11 +2165,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTicketCurrency ?? value;
@@ -1884,11 +2241,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTicketPrice ?? value;
@@ -1957,11 +2315,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTicketSaleStart ?? value;
@@ -2032,11 +2391,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTicketSaleEnd ?? value;
@@ -2103,11 +2463,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoLinkedin ?? value;
@@ -2172,11 +2533,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoTwitter ?? value;
@@ -2241,11 +2603,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoFacebook ?? value;
@@ -2310,11 +2673,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoInstagram ?? value;
@@ -2379,11 +2743,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscord ?? value;
@@ -2448,11 +2813,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscountType ?? value;
@@ -2523,11 +2889,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscountAmount ?? value;
@@ -2594,11 +2961,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscountCode ?? value;
@@ -2670,11 +3038,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscountExpiration ?? value;
@@ -2741,11 +3110,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgName ?? value;
@@ -2810,11 +3180,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgEmail ?? value;
@@ -2879,11 +3250,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgCountryCode ?? value;
@@ -2949,11 +3321,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgPhone ?? value;
@@ -3018,11 +3391,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgWebsite ?? value;
@@ -3087,11 +3461,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCodeofConduct ?? value;
@@ -3158,11 +3533,12 @@ export default function EventsUpdateForm(props) {
               eventLogo: value,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventLogo ?? value;
@@ -3227,11 +3603,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage: value,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventImage ?? value;
@@ -3296,11 +3673,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL: value,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventVirtualURL ?? value;
@@ -3314,75 +3692,6 @@ export default function EventsUpdateForm(props) {
         errorMessage={errors.eventVirtualURL?.errorMessage}
         hasError={errors.eventVirtualURL?.hasError}
         {...getOverrideProps(overrides, "eventVirtualURL")}
-      ></TextField>
-      <TextField
-        label="Event creator user"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCreatorUser}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorUser: value,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCreatorUser ?? value;
-          }
-          if (errors.eventCreatorUser?.hasError) {
-            runValidationTasks("eventCreatorUser", value);
-          }
-          setEventCreatorUser(value);
-        }}
-        onBlur={() => runValidationTasks("eventCreatorUser", eventCreatorUser)}
-        errorMessage={errors.eventCreatorUser?.errorMessage}
-        hasError={errors.eventCreatorUser?.hasError}
-        {...getOverrideProps(overrides, "eventCreatorUser")}
       ></TextField>
       <TextField
         label="Event creator name"
@@ -3434,11 +3743,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName: value,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCreatorName ?? value;
@@ -3503,11 +3813,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage: value,
               eventCreatorBio,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCreatorImage ?? value;
@@ -3574,11 +3885,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio: value,
               eventCreatorHeadline,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCreatorBio ?? value;
@@ -3643,11 +3955,12 @@ export default function EventsUpdateForm(props) {
               eventLogo,
               eventImage,
               eventVirtualURL,
-              eventCreatorUser,
               eventCreatorName,
               eventCreatorImage,
               eventCreatorBio,
               eventCreatorHeadline: value,
+              owner,
+              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCreatorHeadline ?? value;
@@ -3664,6 +3977,198 @@ export default function EventsUpdateForm(props) {
         hasError={errors.eventCreatorHeadline?.hasError}
         {...getOverrideProps(overrides, "eventCreatorHeadline")}
       ></TextField>
+      <TextField
+        label="Owner"
+        isRequired={false}
+        isReadOnly={false}
+        value={owner}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              eventTitle,
+              eventType,
+              eventCategory,
+              eventTags,
+              eventStartDate,
+              eventStartTime,
+              eventDesc,
+              eventAgenda,
+              eventSpeakers,
+              eventEndDate,
+              eventEndTime,
+              eventTimeZone,
+              eventVenueName,
+              eventCountry,
+              eventStreetAddress,
+              eventCity,
+              eventState,
+              eventZipCode,
+              eventTicketQuantity,
+              eventTicketCurrency,
+              eventTicketPrice,
+              eventTicketSaleStart,
+              eventTicketSaleEnd,
+              promoLinkedin,
+              promoTwitter,
+              promoFacebook,
+              promoInstagram,
+              promoDiscord,
+              promoDiscountType,
+              promoDiscountAmount,
+              promoDiscountCode,
+              promoDiscountExpiration,
+              orgName,
+              orgEmail,
+              orgCountryCode,
+              orgPhone,
+              orgWebsite,
+              eventCodeofConduct,
+              eventLogo,
+              eventImage,
+              eventVirtualURL,
+              eventCreatorName,
+              eventCreatorImage,
+              eventCreatorBio,
+              eventCreatorHeadline,
+              owner: value,
+              attendeess,
+            };
+            const result = onChange(modelFields);
+            value = result?.owner ?? value;
+          }
+          if (errors.owner?.hasError) {
+            runValidationTasks("owner", value);
+          }
+          setOwner(value);
+        }}
+        onBlur={() => runValidationTasks("owner", owner)}
+        errorMessage={errors.owner?.errorMessage}
+        hasError={errors.owner?.hasError}
+        {...getOverrideProps(overrides, "owner")}
+      ></TextField>
+      <ArrayField
+        onChange={async (items) => {
+          let values = items;
+          if (onChange) {
+            const modelFields = {
+              eventTitle,
+              eventType,
+              eventCategory,
+              eventTags,
+              eventStartDate,
+              eventStartTime,
+              eventDesc,
+              eventAgenda,
+              eventSpeakers,
+              eventEndDate,
+              eventEndTime,
+              eventTimeZone,
+              eventVenueName,
+              eventCountry,
+              eventStreetAddress,
+              eventCity,
+              eventState,
+              eventZipCode,
+              eventTicketQuantity,
+              eventTicketCurrency,
+              eventTicketPrice,
+              eventTicketSaleStart,
+              eventTicketSaleEnd,
+              promoLinkedin,
+              promoTwitter,
+              promoFacebook,
+              promoInstagram,
+              promoDiscord,
+              promoDiscountType,
+              promoDiscountAmount,
+              promoDiscountCode,
+              promoDiscountExpiration,
+              orgName,
+              orgEmail,
+              orgCountryCode,
+              orgPhone,
+              orgWebsite,
+              eventCodeofConduct,
+              eventLogo,
+              eventImage,
+              eventVirtualURL,
+              eventCreatorName,
+              eventCreatorImage,
+              eventCreatorBio,
+              eventCreatorHeadline,
+              owner,
+              attendeess: values,
+            };
+            const result = onChange(modelFields);
+            values = result?.attendeess ?? values;
+          }
+          setAttendeess(values);
+          setCurrentAttendeessValue(undefined);
+          setCurrentAttendeessDisplayValue("");
+        }}
+        currentFieldValue={currentAttendeessValue}
+        label={"Attendeess"}
+        items={attendeess}
+        hasError={errors?.attendeess?.hasError}
+        runValidationTasks={async () =>
+          await runValidationTasks("attendeess", currentAttendeessValue)
+        }
+        errorMessage={errors?.attendeess?.errorMessage}
+        getBadgeText={getDisplayValue.attendeess}
+        setFieldValue={(model) => {
+          setCurrentAttendeessDisplayValue(
+            model ? getDisplayValue.attendeess(model) : ""
+          );
+          setCurrentAttendeessValue(model);
+        }}
+        inputFieldRef={attendeessRef}
+        defaultFieldValue={""}
+      >
+        <Autocomplete
+          label="Attendeess"
+          isRequired={false}
+          isReadOnly={false}
+          placeholder="Search Attendees"
+          value={currentAttendeessDisplayValue}
+          options={attendeesRecords
+            .filter((r) => !attendeessIdSet.has(getIDValue.attendeess?.(r)))
+            .map((r) => ({
+              id: getIDValue.attendeess?.(r),
+              label: getDisplayValue.attendeess?.(r),
+            }))}
+          onSelect={({ id, label }) => {
+            setCurrentAttendeessValue(
+              attendeesRecords.find((r) =>
+                Object.entries(JSON.parse(id)).every(
+                  ([key, value]) => r[key] === value
+                )
+              )
+            );
+            setCurrentAttendeessDisplayValue(label);
+            runValidationTasks("attendeess", label);
+          }}
+          onClear={() => {
+            setCurrentAttendeessDisplayValue("");
+          }}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (errors.attendeess?.hasError) {
+              runValidationTasks("attendeess", value);
+            }
+            setCurrentAttendeessDisplayValue(value);
+            setCurrentAttendeessValue(undefined);
+          }}
+          onBlur={() =>
+            runValidationTasks("attendeess", currentAttendeessDisplayValue)
+          }
+          errorMessage={errors.attendeess?.errorMessage}
+          hasError={errors.attendeess?.hasError}
+          ref={attendeessRef}
+          labelHidden={true}
+          {...getOverrideProps(overrides, "attendeess")}
+        ></Autocomplete>
+      </ArrayField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

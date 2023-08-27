@@ -5,13 +5,12 @@ import sidebar_menu from '../../constants/sidebar-menu';
 import Attendees from '../../components/Dashboard/Attendees';
 import Main from '../../components/Dashboard/Main';
 import "./dashboard.css";
-import {
-    withAuthenticator
-} from "@aws-amplify/ui-react";
 import Events from '../../components/Dashboard/Events';
 import { BiMenu } from 'react-icons/bi'
 import EventManage from '../../components/Dashboard/Events/EventManage/EventManage';
-
+import {
+    withAuthenticator
+} from "@aws-amplify/ui-react";
 function Dashboard({ signOut }) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
 

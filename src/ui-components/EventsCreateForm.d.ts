@@ -8,6 +8,7 @@ import * as React from "react";
 import { AutocompleteProps, GridProps, HeadingProps, SelectFieldProps, StepperFieldProps, TextAreaFieldProps, TextFieldProps } from "@aws-amplify/ui-react";
 import { StorageManagerProps } from "@aws-amplify/ui-react-storage";
 import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
+import { Attendees } from "../models";
 export declare type ValidationResponse = {
     hasError: boolean;
     errorMessage?: string;
@@ -47,7 +48,6 @@ export declare type EventsCreateFormInputValues = {
     promoDiscountAmount?: number;
     promoDiscountCode?: string;
     promoDiscountExpiration?: string;
-    eventCreatorUser?: string;
     eventCreatorName?: string;
     eventCreatorHeadline?: string;
     eventCreatorImage?: string;
@@ -59,6 +59,7 @@ export declare type EventsCreateFormInputValues = {
     eventImage?: string;
     eventLogo?: string;
     eventCodeofConduct?: string;
+    attendeess?: Attendees[];
 };
 export declare type EventsCreateFormValidationValues = {
     eventTitle?: ValidationFunction<string>;
@@ -94,7 +95,6 @@ export declare type EventsCreateFormValidationValues = {
     promoDiscountAmount?: ValidationFunction<number>;
     promoDiscountCode?: ValidationFunction<string>;
     promoDiscountExpiration?: ValidationFunction<string>;
-    eventCreatorUser?: ValidationFunction<string>;
     eventCreatorName?: ValidationFunction<string>;
     eventCreatorHeadline?: ValidationFunction<string>;
     eventCreatorImage?: ValidationFunction<string>;
@@ -106,6 +106,7 @@ export declare type EventsCreateFormValidationValues = {
     eventImage?: ValidationFunction<string>;
     eventLogo?: ValidationFunction<string>;
     eventCodeofConduct?: ValidationFunction<string>;
+    attendeess?: ValidationFunction<Attendees>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type EventsCreateFormOverridesProps = {
@@ -116,7 +117,7 @@ export declare type EventsCreateFormOverridesProps = {
     eventType?: PrimitiveOverrideProps<SelectFieldProps>;
     eventCategory?: PrimitiveOverrideProps<SelectFieldProps>;
     eventDesc?: PrimitiveOverrideProps<TextAreaFieldProps>;
-    eventAgenda?: PrimitiveOverrideProps<TextAreaFieldProps>;
+    eventAgenda?: PrimitiveOverrideProps<StorageManagerProps>;
     eventSpeakers?: PrimitiveOverrideProps<TextAreaFieldProps>;
     eventTags?: PrimitiveOverrideProps<TextAreaFieldProps>;
     SectionalElement1?: PrimitiveOverrideProps<HeadingProps>;
@@ -159,7 +160,6 @@ export declare type EventsCreateFormOverridesProps = {
     promoDiscountExpiration?: PrimitiveOverrideProps<TextFieldProps>;
     SectionalElement5?: PrimitiveOverrideProps<HeadingProps>;
     RowGrid28?: PrimitiveOverrideProps<GridProps>;
-    eventCreatorUser?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorName?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorHeadline?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorImage?: PrimitiveOverrideProps<StorageManagerProps>;
@@ -170,10 +170,11 @@ export declare type EventsCreateFormOverridesProps = {
     orgPhone?: PrimitiveOverrideProps<TextFieldProps>;
     orgWebsite?: PrimitiveOverrideProps<TextFieldProps>;
     SectionalElement6?: PrimitiveOverrideProps<HeadingProps>;
-    RowGrid38?: PrimitiveOverrideProps<GridProps>;
+    RowGrid37?: PrimitiveOverrideProps<GridProps>;
     eventImage?: PrimitiveOverrideProps<StorageManagerProps>;
     eventLogo?: PrimitiveOverrideProps<StorageManagerProps>;
     eventCodeofConduct?: PrimitiveOverrideProps<TextAreaFieldProps>;
+    attendeess?: PrimitiveOverrideProps<AutocompleteProps>;
 } & EscapeHatchProps;
 export declare type EventsCreateFormProps = React.PropsWithChildren<{
     overrides?: EventsCreateFormOverridesProps | undefined | null;

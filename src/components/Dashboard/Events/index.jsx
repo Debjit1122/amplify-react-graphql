@@ -1,11 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import EventData from '../../../routes/Dashboard/data/eventData';
 import { FaCalendarAlt, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import { AiFillInfoCircle } from 'react-icons/ai';
+import { Storage } from 'aws-amplify';
 
 const Events = () => {
     const { events } = EventData();
+    const [eventImages, setEventImages] = useState({});
+
+    useEffect(() => {
+        async function fetchEventImages() {
+            const imagePromises = events.map(async (event) => {
+                if (event.eventImage) {
+                    const image = await Storage.get(event.eventImage);
+                    return { eventId: event.id, image };
+                }
+                return null;
+            });
+
+            const images = await Promise.all(imagePromises);
+            const imageMap = {};
+            images.forEach((imageData) => {
+                if (imageData) {
+                    imageMap[imageData.eventId] = imageData.image;
+                }
+            });
+            setEventImages(imageMap);
+        }
+
+        fetchEventImages();
+    }, [events]);
 
     if (events.length === 0) {
         return (
@@ -21,14 +46,14 @@ const Events = () => {
 
     return (
         <div>
-            {events.map((event) => (
-                <div className="dashboard-content" key={event.id}>
-                    <div className="dashboard-content-container">
-                        <h2 className='text-center'>My Events</h2>
-                        <div className="card events-card">
+            <div className="dashboard-content">
+                <div className="dashboard-content-container">
+                    <h2 className='text-center'>My Events</h2>
+                    {events.map((event) => (
+                        <div className="card events-card" key={event.id}>
                             <div className="card-image">
                                 <img
-                                    src="https://via.placeholder.com/300"
+                                    src={eventImages[event.id] || 'https://via.placeholder.com/300'}
                                     className="card-img-top"
                                     alt="Event"
                                 />
@@ -54,9 +79,9 @@ const Events = () => {
                                 </Link>
                             </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
-            ))}
+            </div>
         </div>
     );
 };

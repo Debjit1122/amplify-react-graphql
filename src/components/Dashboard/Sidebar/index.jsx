@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
 import SideBarItem from './sidebar-item';
-import LogoutIcon from '../../../assets/icons/logout.svg';
+import { BiLogOut } from 'react-icons/bi';
 import logoTransparent from "../../../assets/images/logo-transparent.png"
 
 function SideBar({ menu, signOut, open, closeSidebar }) {
@@ -44,6 +44,7 @@ function SideBar({ menu, signOut, open, closeSidebar }) {
 
                 <div className='sidebar-footer'>
                     <span className='sidebar-item-label'>Logout</span>
+                    <BiLogOut onClick={signOut}/>
                 </div>
             </div>
         </nav>

@@ -5,9 +5,9 @@
  **************************************************************************/
 
 import * as React from "react";
-import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { AutocompleteProps, GridProps, TextFieldProps } from "@aws-amplify/ui-react";
 import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
-import { Events } from "../models";
+import { Events, Attendees } from "../models";
 export declare type ValidationResponse = {
     hasError: boolean;
     errorMessage?: string;
@@ -55,11 +55,12 @@ export declare type EventsUpdateFormInputValues = {
     eventLogo?: string;
     eventImage?: string;
     eventVirtualURL?: string;
-    eventCreatorUser?: string;
     eventCreatorName?: string;
     eventCreatorImage?: string;
     eventCreatorBio?: string;
     eventCreatorHeadline?: string;
+    owner?: string;
+    attendeess?: Attendees[];
 };
 export declare type EventsUpdateFormValidationValues = {
     eventTitle?: ValidationFunction<string>;
@@ -103,11 +104,12 @@ export declare type EventsUpdateFormValidationValues = {
     eventLogo?: ValidationFunction<string>;
     eventImage?: ValidationFunction<string>;
     eventVirtualURL?: ValidationFunction<string>;
-    eventCreatorUser?: ValidationFunction<string>;
     eventCreatorName?: ValidationFunction<string>;
     eventCreatorImage?: ValidationFunction<string>;
     eventCreatorBio?: ValidationFunction<string>;
     eventCreatorHeadline?: ValidationFunction<string>;
+    owner?: ValidationFunction<string>;
+    attendeess?: ValidationFunction<Attendees>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type EventsUpdateFormOverridesProps = {
@@ -153,11 +155,12 @@ export declare type EventsUpdateFormOverridesProps = {
     eventLogo?: PrimitiveOverrideProps<TextFieldProps>;
     eventImage?: PrimitiveOverrideProps<TextFieldProps>;
     eventVirtualURL?: PrimitiveOverrideProps<TextFieldProps>;
-    eventCreatorUser?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorName?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorImage?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorBio?: PrimitiveOverrideProps<TextFieldProps>;
     eventCreatorHeadline?: PrimitiveOverrideProps<TextFieldProps>;
+    owner?: PrimitiveOverrideProps<TextFieldProps>;
+    attendeess?: PrimitiveOverrideProps<AutocompleteProps>;
 } & EscapeHatchProps;
 export declare type EventsUpdateFormProps = React.PropsWithChildren<{
     overrides?: EventsUpdateFormOverridesProps | undefined | null;

@@ -45,3 +45,21 @@ code {
 .btn-outline-primary:active {
   background: hsl(190, 100%, 20%) !important;
 }
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+ul,
+ol {
+  padding: 0;
+}
