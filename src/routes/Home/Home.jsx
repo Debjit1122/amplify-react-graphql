@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Header } from "../../components/Home/header";
+import Header from "../../components/Home/header";
 import { HowTo } from "../../components/Home/howto";
 import { About } from "../../components/Home/about";
 import { Features } from "../../components/Home/features";
@@ -27,7 +27,7 @@ const Home = () => {
 
     return (
         <div>
-            <nav className="navbar fixed-top navbar-expand-lg nanbar-light bg-light">
+            <nav className="navbar fixed-top navbar-expand-lg nanbar-light">
                 <div className="container-fluid">
                     <a className="navbar-brand" href="/">
                         <img src={logo} alt="" />

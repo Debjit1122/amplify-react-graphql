@@ -2,10 +2,13 @@
   "resourceName": "s3amplifyreactgraphqlstorage9006baf5",
   "bucketName": "amplify-react-graphql-storage-9006baf5",
   "policyUUID": "57dc1b84",
-  "storageAccess": "auth",
-  "guestAccess": [],
-  "authAccess": [
-    "CREATE_AND_UPDATE",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
     "READ"
+  ],
+  "authAccess": [
+    "READ",
+    "CREATE_AND_UPDATE",
+    "DELETE"
   ]
 }

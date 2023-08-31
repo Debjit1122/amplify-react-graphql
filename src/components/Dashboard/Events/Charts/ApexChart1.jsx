@@ -1,21 +1,23 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ReactApexChart from 'react-apexcharts';
-
 class ApexChart1 extends React.Component {
     constructor(props) {
         super(props);
-
+        const { eventTicketStartDate, attendeesCount, totalSeats } = this.props;
+        const startDate = new Date(eventTicketStartDate);
+        const currentDate = new Date();
+        const categories = generateDateRangeCategories(startDate, currentDate);
         this.state = {
             series: [
                 {
                     name: 'Seats Filled',
                     group: 'actual',
-                    data: [40, 20, 30]
+                    data: [attendeesCount]
                 },
                 {
                     name: 'Seats Left',
                     group: 'actual',
-                    data: [160, 140, 110]
+                    data: [totalSeats - attendeesCount]
                 }
             ],
             options: {
@@ -39,14 +41,7 @@ class ApexChart1 extends React.Component {
                     }
                 },
                 xaxis: {
-                    categories: [
-                        '21 Aug',
-                        '22 Aug',
-                        '23 Aug',
-                        '24 Aug',
-                        '25 Aug',
-                        '26 Aug'
-                    ]
+                    categories: categories
                 },
                 fill: {
                     opacity: 1
@@ -74,6 +69,19 @@ class ApexChart1 extends React.Component {
             </div>
         );
     }
+}
+
+function generateDateRangeCategories(startDate, endDate) {
+    const categories = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const options = { day: 'numeric', month: 'short' };
+        categories.push(currentDate.toLocaleDateString('en-US', options));
+        currentDate.setDate(currentDate.getDate() + 1); // Increment by one day
+    }
+
+    return categories;
 }
 
 export default ApexChart1;

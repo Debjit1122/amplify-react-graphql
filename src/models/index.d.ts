@@ -75,7 +75,6 @@ type EagerEvents = {
   readonly eventTitle?: string | null;
   readonly eventType?: string | null;
   readonly eventCategory?: string | null;
-  readonly eventTags?: string | null;
   readonly eventStartDate?: string | null;
   readonly eventStartTime?: string | null;
   readonly eventDesc?: string | null;
@@ -106,7 +105,6 @@ type EagerEvents = {
   readonly promoDiscountExpiration?: string | null;
   readonly orgName?: string | null;
   readonly orgEmail?: string | null;
-  readonly orgCountryCode?: string | null;
   readonly orgPhone?: string | null;
   readonly orgWebsite?: string | null;
   readonly eventCodeofConduct?: string | null;
@@ -132,7 +130,6 @@ type LazyEvents = {
   readonly eventTitle?: string | null;
   readonly eventType?: string | null;
   readonly eventCategory?: string | null;
-  readonly eventTags?: string | null;
   readonly eventStartDate?: string | null;
   readonly eventStartTime?: string | null;
   readonly eventDesc?: string | null;
@@ -163,7 +160,6 @@ type LazyEvents = {
   readonly promoDiscountExpiration?: string | null;
   readonly orgName?: string | null;
   readonly orgEmail?: string | null;
-  readonly orgCountryCode?: string | null;
   readonly orgPhone?: string | null;
   readonly orgWebsite?: string | null;
   readonly eventCodeofConduct?: string | null;

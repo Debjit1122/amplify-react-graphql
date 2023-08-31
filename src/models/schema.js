@@ -211,13 +211,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "eventTags": {
-                    "name": "eventTags",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
                 "eventStartDate": {
                     "name": "eventStartDate",
                     "isArray": false,
@@ -425,13 +418,6 @@ export const schema = {
                     "name": "orgEmail",
                     "isArray": false,
                     "type": "AWSEmail",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "orgCountryCode": {
-                    "name": "orgCountryCode",
-                    "isArray": false,
-                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -675,5 +661,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "aa81c36b37e491819d8abf48c081b280"
+    "version": "b72dfb3a7d9fdb830840433b77e1ecf8"
 };

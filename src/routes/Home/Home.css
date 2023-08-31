@@ -1,11 +1,9 @@
-/* Add this CSS to your stylesheet */
-
-/* Navbar */
 .navbar {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
     padding: 10px 20px;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
+    background: #fff;
 }
 
 .navbar-brand {
@@ -34,10 +32,60 @@
     color: #222;
 }
 
-p.intro {
-  margin: 12px 0 0;
-  line-height: 24px;
+.header {
+  padding: 120px 0;
 }
+
+.header-content {
+  padding-right: 40px;
+}
+
+.header-title {
+  font-size: 42px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.header-subtitle {
+  font-size: 18px;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.header-button {
+  padding: 12px 28px;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.header-image {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .header-title {
+    font-size: 32px;
+  }
+
+  .header-subtitle {
+    font-size: 16px;
+  }
+}
+
 
 
 .section-title {
@@ -62,97 +110,7 @@ p.intro {
 .section-title p {
   font-size: 18px;
 }
-.btn-custom {
-  font-family: "Raleway", sans-serif;
-  text-transform: uppercase;
-  color: #fff;
-  background-color: hsl(190, 89%, 21%);
-  padding: 14px 34px;
-  letter-spacing: 1px;
-  margin: 0;
-  font-size: 15px;
-  font-weight: 500;
-  border-radius: 25px;
-  border: 0;
-}
-.btn-custom:hover,
-.btn-custom:focus,
-.btn-custom.focus,
-.btn-custom:active,
-.btn-custom.active {
-  color: #fff;
-  background: hsl(185, 90%, 15%);
-}
-.btn:active,
-.btn.active {
-  background-image: none;
-  outline: 0;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-}
-a:focus,
-.btn:focus,
-.btn:active:focus,
-.btn.active:focus,
-.btn.focus,
-.btn:active.focus,
-.btn.active.focus {
-  outline: none;
-  outline-offset: none;
-}
-/* Header Section */
-.intro {
-  display: table;
-  width: 100%;
-  padding: 0;
-  background: url(../../assets/images/intro-bg.jpg) center center no-repeat;
-  background-color: #e5e5e5;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  background-size: cover;
-  -o-background-size: cover;
-  background-attachment: fixed;
-  
-}
-.intro .overlay {
-  background: rgba(0, 0, 0, 0.2);
-}
-.intro h1 {
-  font-family: "Raleway", sans-serif;
-  color: #fff;
-  font-size: 4rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-top: 0;
-  margin-bottom: 10px;
-  
-}
 
-.intro p {
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 300;
-  line-height: 30px;
-  margin: 0 auto;
-  margin-bottom: 60px;
-  
-}
-
-@media screen and (max-width: 991px) {
-  .intro h1 {
-    font-size: 2.5rem;
-  }
-  .intro p {
-    font-size: 1rem;
-  }
-}
-
-header .intro-text {
-  padding-top: 350px;
-  padding-bottom: 200px;
-  text-align: center;
-  
-}
 /* Features Section */
 #howto {
   background: #f6f6f6;
@@ -211,7 +169,6 @@ header .intro-text {
   margin-top: 10px;
   background: #fff;
   border-right: 0;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.06);
 }
 #about p {
   line-height: 24px;
@@ -405,15 +362,7 @@ header .intro-text {
   color: #cc0033;
   text-align: left;
 }
-#contact .btn-custom {
-  margin: 30px 0;
-  background: transparent;
-  border: 2px solid #fff;
-}
-#contact .btn-custom:hover {
-  color: #1f386e;
-  background: #fff;
-}
+
 label {
   font-size: 12px;
   font-weight: 400;

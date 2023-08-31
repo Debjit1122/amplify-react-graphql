@@ -2,20 +2,22 @@
     display: flex;
     flex-direction: row;
     overflow-y: hidden;
-    background-color: #F0F2F5;
+    background: url("../../assets/images/dashboard-bg.jpg");
+    background-size: cover;
     height: 100vh;
 }
 .dashboard-body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: auto;
 }
 
 .dashboard-content {
     display: flex;
+    flex-wrap: wrap;
     flex: 1;
     flex-direction: column;
-    overflow: auto;
 }
 .dashboard-content-container {
     background-color: white;
@@ -25,7 +27,7 @@
     display: flex;
     flex-direction: column;
     gap:25px;
-    
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
 .dashboard-content-header {
     display: flex;
@@ -277,6 +279,14 @@ td span {
 
 .dashboard-body {
     padding: 40px;
+     -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  overflow: -moz-scrollbars-none; /* Firefox */
+
+}
+
+.dashboard-body::-webkit-scrollbar {
+  display: none;
 }
 
 .dashboard-body .card {
@@ -318,7 +328,6 @@ td span {
   border: none;
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s, box-shadow 0.3s;
   background-color: #fff;
   margin: 10px;
@@ -390,3 +399,4 @@ td span {
     background: hsla(190, 99%, 40%, 0.375);
     color: #000000;
 }
+

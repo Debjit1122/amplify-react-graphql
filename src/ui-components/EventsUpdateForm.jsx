@@ -8,179 +8,19 @@
 import * as React from "react";
 import {
   Autocomplete,
-  Badge,
   Button,
-  Divider,
   Flex,
   Grid,
-  Icon,
-  ScrollView,
-  Text,
+  Heading,
+  SelectField,
+  StepperField,
+  TextAreaField,
   TextField,
-  useTheme,
 } from "@aws-amplify/ui-react";
-import {
-  getOverrideProps,
-  useDataStoreBinding,
-} from "@aws-amplify/ui-react/internal";
-import { Events, Attendees, AttendeesEvents } from "../models";
+import { getOverrideProps } from "@aws-amplify/ui-react/internal";
+import { Events } from "../models";
 import { fetchByPath, validateField } from "./utils";
 import { DataStore } from "aws-amplify";
-function ArrayField({
-  items = [],
-  onChange,
-  label,
-  inputFieldRef,
-  children,
-  hasError,
-  setFieldValue,
-  currentFieldValue,
-  defaultFieldValue,
-  lengthLimit,
-  getBadgeText,
-  runValidationTasks,
-  errorMessage,
-}) {
-  const labelElement = <Text>{label}</Text>;
-  const {
-    tokens: {
-      components: {
-        fieldmessages: { error: errorStyles },
-      },
-    },
-  } = useTheme();
-  const [selectedBadgeIndex, setSelectedBadgeIndex] = React.useState();
-  const [isEditing, setIsEditing] = React.useState();
-  React.useEffect(() => {
-    if (isEditing) {
-      inputFieldRef?.current?.focus();
-    }
-  }, [isEditing]);
-  const removeItem = async (removeIndex) => {
-    const newItems = items.filter((value, index) => index !== removeIndex);
-    await onChange(newItems);
-    setSelectedBadgeIndex(undefined);
-  };
-  const addItem = async () => {
-    const { hasError } = runValidationTasks();
-    if (
-      currentFieldValue !== undefined &&
-      currentFieldValue !== null &&
-      currentFieldValue !== "" &&
-      !hasError
-    ) {
-      const newItems = [...items];
-      if (selectedBadgeIndex !== undefined) {
-        newItems[selectedBadgeIndex] = currentFieldValue;
-        setSelectedBadgeIndex(undefined);
-      } else {
-        newItems.push(currentFieldValue);
-      }
-      await onChange(newItems);
-      setIsEditing(false);
-    }
-  };
-  const arraySection = (
-    <React.Fragment>
-      {!!items?.length && (
-        <ScrollView height="inherit" width="inherit" maxHeight={"7rem"}>
-          {items.map((value, index) => {
-            return (
-              <Badge
-                key={index}
-                style={{
-                  cursor: "pointer",
-                  alignItems: "center",
-                  marginRight: 3,
-                  marginTop: 3,
-                  backgroundColor:
-                    index === selectedBadgeIndex ? "#B8CEF9" : "",
-                }}
-                onClick={() => {
-                  setSelectedBadgeIndex(index);
-                  setFieldValue(items[index]);
-                  setIsEditing(true);
-                }}
-              >
-                {getBadgeText ? getBadgeText(value) : value.toString()}
-                <Icon
-                  style={{
-                    cursor: "pointer",
-                    paddingLeft: 3,
-                    width: 20,
-                    height: 20,
-                  }}
-                  viewBox={{ width: 20, height: 20 }}
-                  paths={[
-                    {
-                      d: "M10 10l5.09-5.09L10 10l5.09 5.09L10 10zm0 0L4.91 4.91 10 10l-5.09 5.09L10 10z",
-                      stroke: "black",
-                    },
-                  ]}
-                  ariaLabel="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    removeItem(index);
-                  }}
-                />
-              </Badge>
-            );
-          })}
-        </ScrollView>
-      )}
-      <Divider orientation="horizontal" marginTop={5} />
-    </React.Fragment>
-  );
-  if (lengthLimit !== undefined && items.length >= lengthLimit && !isEditing) {
-    return (
-      <React.Fragment>
-        {labelElement}
-        {arraySection}
-      </React.Fragment>
-    );
-  }
-  return (
-    <React.Fragment>
-      {labelElement}
-      {isEditing && children}
-      {!isEditing ? (
-        <>
-          <Button
-            onClick={() => {
-              setIsEditing(true);
-            }}
-          >
-            Add item
-          </Button>
-          {errorMessage && hasError && (
-            <Text color={errorStyles.color} fontSize={errorStyles.fontSize}>
-              {errorMessage}
-            </Text>
-          )}
-        </>
-      ) : (
-        <Flex justifyContent="flex-end">
-          {(currentFieldValue || isEditing) && (
-            <Button
-              children="Cancel"
-              type="button"
-              size="small"
-              onClick={() => {
-                setFieldValue(defaultFieldValue);
-                setIsEditing(false);
-                setSelectedBadgeIndex(undefined);
-              }}
-            ></Button>
-          )}
-          <Button size="small" variation="link" onClick={addItem}>
-            {selectedBadgeIndex !== undefined ? "Save" : "Add"}
-          </Button>
-        </Flex>
-      )}
-      {arraySection}
-    </React.Fragment>
-  );
-}
 export default function EventsUpdateForm(props) {
   const {
     id: idProp,
@@ -197,24 +37,23 @@ export default function EventsUpdateForm(props) {
     eventTitle: "",
     eventType: "",
     eventCategory: "",
-    eventTags: "",
-    eventStartDate: "",
-    eventStartTime: "",
     eventDesc: "",
-    eventAgenda: "",
     eventSpeakers: "",
+    eventStartDate: "",
     eventEndDate: "",
+    eventStartTime: "",
     eventEndTime: "",
-    eventTimeZone: "",
+    eventTimeZone: undefined,
     eventVenueName: "",
-    eventCountry: "",
+    eventCountry: undefined,
     eventStreetAddress: "",
     eventCity: "",
     eventState: "",
     eventZipCode: "",
-    eventTicketQuantity: "",
+    eventVirtualURL: "",
     eventTicketCurrency: "",
     eventTicketPrice: "",
+    eventTicketQuantity: 0,
     eventTicketSaleStart: "",
     eventTicketSaleEnd: "",
     promoLinkedin: "",
@@ -226,43 +65,32 @@ export default function EventsUpdateForm(props) {
     promoDiscountAmount: "",
     promoDiscountCode: "",
     promoDiscountExpiration: "",
+    eventCreatorName: "",
+    eventCreatorHeadline: "",
+    eventCreatorBio: "",
     orgName: "",
     orgEmail: "",
-    orgCountryCode: "",
     orgPhone: "",
     orgWebsite: "",
     eventCodeofConduct: "",
-    eventLogo: "",
-    eventImage: "",
-    eventVirtualURL: "",
-    eventCreatorName: "",
-    eventCreatorImage: "",
-    eventCreatorBio: "",
-    eventCreatorHeadline: "",
-    owner: "",
-    attendeess: [],
   };
   const [eventTitle, setEventTitle] = React.useState(initialValues.eventTitle);
   const [eventType, setEventType] = React.useState(initialValues.eventType);
   const [eventCategory, setEventCategory] = React.useState(
     initialValues.eventCategory
   );
-  const [eventTags, setEventTags] = React.useState(initialValues.eventTags);
-  const [eventStartDate, setEventStartDate] = React.useState(
-    initialValues.eventStartDate
-  );
-  const [eventStartTime, setEventStartTime] = React.useState(
-    initialValues.eventStartTime
-  );
   const [eventDesc, setEventDesc] = React.useState(initialValues.eventDesc);
-  const [eventAgenda, setEventAgenda] = React.useState(
-    initialValues.eventAgenda
-  );
   const [eventSpeakers, setEventSpeakers] = React.useState(
     initialValues.eventSpeakers
   );
+  const [eventStartDate, setEventStartDate] = React.useState(
+    initialValues.eventStartDate
+  );
   const [eventEndDate, setEventEndDate] = React.useState(
     initialValues.eventEndDate
+  );
+  const [eventStartTime, setEventStartTime] = React.useState(
+    initialValues.eventStartTime
   );
   const [eventEndTime, setEventEndTime] = React.useState(
     initialValues.eventEndTime
@@ -284,14 +112,17 @@ export default function EventsUpdateForm(props) {
   const [eventZipCode, setEventZipCode] = React.useState(
     initialValues.eventZipCode
   );
-  const [eventTicketQuantity, setEventTicketQuantity] = React.useState(
-    initialValues.eventTicketQuantity
+  const [eventVirtualURL, setEventVirtualURL] = React.useState(
+    initialValues.eventVirtualURL
   );
   const [eventTicketCurrency, setEventTicketCurrency] = React.useState(
     initialValues.eventTicketCurrency
   );
   const [eventTicketPrice, setEventTicketPrice] = React.useState(
     initialValues.eventTicketPrice
+  );
+  const [eventTicketQuantity, setEventTicketQuantity] = React.useState(
+    initialValues.eventTicketQuantity
   );
   const [eventTicketSaleStart, setEventTicketSaleStart] = React.useState(
     initialValues.eventTicketSaleStart
@@ -326,50 +157,35 @@ export default function EventsUpdateForm(props) {
   const [promoDiscountExpiration, setPromoDiscountExpiration] = React.useState(
     initialValues.promoDiscountExpiration
   );
+  const [eventCreatorName, setEventCreatorName] = React.useState(
+    initialValues.eventCreatorName
+  );
+  const [eventCreatorHeadline, setEventCreatorHeadline] = React.useState(
+    initialValues.eventCreatorHeadline
+  );
+  const [eventCreatorBio, setEventCreatorBio] = React.useState(
+    initialValues.eventCreatorBio
+  );
   const [orgName, setOrgName] = React.useState(initialValues.orgName);
   const [orgEmail, setOrgEmail] = React.useState(initialValues.orgEmail);
-  const [orgCountryCode, setOrgCountryCode] = React.useState(
-    initialValues.orgCountryCode
-  );
   const [orgPhone, setOrgPhone] = React.useState(initialValues.orgPhone);
   const [orgWebsite, setOrgWebsite] = React.useState(initialValues.orgWebsite);
   const [eventCodeofConduct, setEventCodeofConduct] = React.useState(
     initialValues.eventCodeofConduct
   );
-  const [eventLogo, setEventLogo] = React.useState(initialValues.eventLogo);
-  const [eventImage, setEventImage] = React.useState(initialValues.eventImage);
-  const [eventVirtualURL, setEventVirtualURL] = React.useState(
-    initialValues.eventVirtualURL
-  );
-  const [eventCreatorName, setEventCreatorName] = React.useState(
-    initialValues.eventCreatorName
-  );
-  const [eventCreatorImage, setEventCreatorImage] = React.useState(
-    initialValues.eventCreatorImage
-  );
-  const [eventCreatorBio, setEventCreatorBio] = React.useState(
-    initialValues.eventCreatorBio
-  );
-  const [eventCreatorHeadline, setEventCreatorHeadline] = React.useState(
-    initialValues.eventCreatorHeadline
-  );
-  const [owner, setOwner] = React.useState(initialValues.owner);
-  const [attendeess, setAttendeess] = React.useState(initialValues.attendeess);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = eventsRecord
-      ? { ...initialValues, ...eventsRecord, attendeess: linkedAttendeess }
+      ? { ...initialValues, ...eventsRecord }
       : initialValues;
     setEventTitle(cleanValues.eventTitle);
     setEventType(cleanValues.eventType);
     setEventCategory(cleanValues.eventCategory);
-    setEventTags(cleanValues.eventTags);
-    setEventStartDate(cleanValues.eventStartDate);
-    setEventStartTime(cleanValues.eventStartTime);
     setEventDesc(cleanValues.eventDesc);
-    setEventAgenda(cleanValues.eventAgenda);
     setEventSpeakers(cleanValues.eventSpeakers);
+    setEventStartDate(cleanValues.eventStartDate);
     setEventEndDate(cleanValues.eventEndDate);
+    setEventStartTime(cleanValues.eventStartTime);
     setEventEndTime(cleanValues.eventEndTime);
     setEventTimeZone(cleanValues.eventTimeZone);
     setEventVenueName(cleanValues.eventVenueName);
@@ -378,9 +194,10 @@ export default function EventsUpdateForm(props) {
     setEventCity(cleanValues.eventCity);
     setEventState(cleanValues.eventState);
     setEventZipCode(cleanValues.eventZipCode);
-    setEventTicketQuantity(cleanValues.eventTicketQuantity);
+    setEventVirtualURL(cleanValues.eventVirtualURL);
     setEventTicketCurrency(cleanValues.eventTicketCurrency);
     setEventTicketPrice(cleanValues.eventTicketPrice);
+    setEventTicketQuantity(cleanValues.eventTicketQuantity);
     setEventTicketSaleStart(cleanValues.eventTicketSaleStart);
     setEventTicketSaleEnd(cleanValues.eventTicketSaleEnd);
     setPromoLinkedin(cleanValues.promoLinkedin);
@@ -392,80 +209,36 @@ export default function EventsUpdateForm(props) {
     setPromoDiscountAmount(cleanValues.promoDiscountAmount);
     setPromoDiscountCode(cleanValues.promoDiscountCode);
     setPromoDiscountExpiration(cleanValues.promoDiscountExpiration);
+    setEventCreatorName(cleanValues.eventCreatorName);
+    setEventCreatorHeadline(cleanValues.eventCreatorHeadline);
+    setEventCreatorBio(cleanValues.eventCreatorBio);
     setOrgName(cleanValues.orgName);
     setOrgEmail(cleanValues.orgEmail);
-    setOrgCountryCode(cleanValues.orgCountryCode);
     setOrgPhone(cleanValues.orgPhone);
     setOrgWebsite(cleanValues.orgWebsite);
     setEventCodeofConduct(cleanValues.eventCodeofConduct);
-    setEventLogo(cleanValues.eventLogo);
-    setEventImage(cleanValues.eventImage);
-    setEventVirtualURL(cleanValues.eventVirtualURL);
-    setEventCreatorName(cleanValues.eventCreatorName);
-    setEventCreatorImage(cleanValues.eventCreatorImage);
-    setEventCreatorBio(cleanValues.eventCreatorBio);
-    setEventCreatorHeadline(cleanValues.eventCreatorHeadline);
-    setOwner(cleanValues.owner);
-    setAttendeess(cleanValues.attendeess ?? []);
-    setCurrentAttendeessValue(undefined);
-    setCurrentAttendeessDisplayValue("");
     setErrors({});
   };
   const [eventsRecord, setEventsRecord] = React.useState(eventsModelProp);
-  const [linkedAttendeess, setLinkedAttendeess] = React.useState([]);
-  const canUnlinkAttendeess = false;
   React.useEffect(() => {
     const queryData = async () => {
       const record = idProp
         ? await DataStore.query(Events, idProp)
         : eventsModelProp;
       setEventsRecord(record);
-      const linkedAttendeess = record
-        ? await Promise.all(
-            (
-              await record.attendeess.toArray()
-            ).map((r) => {
-              return r.attendees;
-            })
-          )
-        : [];
-      setLinkedAttendeess(linkedAttendeess);
     };
     queryData();
   }, [idProp, eventsModelProp]);
-  React.useEffect(resetStateValues, [eventsRecord, linkedAttendeess]);
-  const [currentAttendeessDisplayValue, setCurrentAttendeessDisplayValue] =
-    React.useState("");
-  const [currentAttendeessValue, setCurrentAttendeessValue] =
-    React.useState(undefined);
-  const attendeessRef = React.createRef();
-  const getIDValue = {
-    attendeess: (r) => JSON.stringify({ id: r?.id }),
-  };
-  const attendeessIdSet = new Set(
-    Array.isArray(attendeess)
-      ? attendeess.map((r) => getIDValue.attendeess?.(r))
-      : getIDValue.attendeess?.(attendeess)
-  );
-  const attendeesRecords = useDataStoreBinding({
-    type: "collection",
-    model: Attendees,
-  }).items;
-  const getDisplayValue = {
-    attendeess: (r) =>
-      `${r?.attendeeName ? r?.attendeeName + " - " : ""}${r?.id}`,
-  };
+  React.useEffect(resetStateValues, [eventsRecord]);
   const validations = {
     eventTitle: [],
     eventType: [],
     eventCategory: [],
-    eventTags: [],
-    eventStartDate: [],
-    eventStartTime: [],
     eventDesc: [],
-    eventAgenda: [],
     eventSpeakers: [],
+    eventStartDate: [],
     eventEndDate: [],
+    eventStartTime: [],
     eventEndTime: [],
     eventTimeZone: [],
     eventVenueName: [],
@@ -474,9 +247,10 @@ export default function EventsUpdateForm(props) {
     eventCity: [],
     eventState: [],
     eventZipCode: [],
-    eventTicketQuantity: [],
+    eventVirtualURL: [{ type: "URL" }],
     eventTicketCurrency: [],
     eventTicketPrice: [],
+    eventTicketQuantity: [],
     eventTicketSaleStart: [],
     eventTicketSaleEnd: [],
     promoLinkedin: [],
@@ -488,21 +262,14 @@ export default function EventsUpdateForm(props) {
     promoDiscountAmount: [],
     promoDiscountCode: [],
     promoDiscountExpiration: [],
+    eventCreatorName: [],
+    eventCreatorHeadline: [],
+    eventCreatorBio: [],
     orgName: [],
     orgEmail: [{ type: "Email" }],
-    orgCountryCode: [],
     orgPhone: [{ type: "Phone" }],
     orgWebsite: [{ type: "URL" }],
     eventCodeofConduct: [],
-    eventLogo: [],
-    eventImage: [],
-    eventVirtualURL: [{ type: "URL" }],
-    eventCreatorName: [],
-    eventCreatorImage: [],
-    eventCreatorBio: [],
-    eventCreatorHeadline: [],
-    owner: [],
-    attendeess: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -550,13 +317,11 @@ export default function EventsUpdateForm(props) {
           eventTitle,
           eventType,
           eventCategory,
-          eventTags,
-          eventStartDate,
-          eventStartTime,
           eventDesc,
-          eventAgenda,
           eventSpeakers,
+          eventStartDate,
           eventEndDate,
+          eventStartTime,
           eventEndTime,
           eventTimeZone,
           eventVenueName,
@@ -565,9 +330,10 @@ export default function EventsUpdateForm(props) {
           eventCity,
           eventState,
           eventZipCode,
-          eventTicketQuantity,
+          eventVirtualURL,
           eventTicketCurrency,
           eventTicketPrice,
+          eventTicketQuantity,
           eventTicketSaleStart,
           eventTicketSaleEnd,
           promoLinkedin,
@@ -579,42 +345,27 @@ export default function EventsUpdateForm(props) {
           promoDiscountAmount,
           promoDiscountCode,
           promoDiscountExpiration,
+          eventCreatorName,
+          eventCreatorHeadline,
+          eventCreatorBio,
           orgName,
           orgEmail,
-          orgCountryCode,
           orgPhone,
           orgWebsite,
           eventCodeofConduct,
-          eventLogo,
-          eventImage,
-          eventVirtualURL,
-          eventCreatorName,
-          eventCreatorImage,
-          eventCreatorBio,
-          eventCreatorHeadline,
-          owner,
-          attendeess,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
             if (Array.isArray(modelFields[fieldName])) {
               promises.push(
                 ...modelFields[fieldName].map((item) =>
-                  runValidationTasks(
-                    fieldName,
-                    item,
-                    getDisplayValue[fieldName]
-                  )
+                  runValidationTasks(fieldName, item)
                 )
               );
               return promises;
             }
             promises.push(
-              runValidationTasks(
-                fieldName,
-                modelFields[fieldName],
-                getDisplayValue[fieldName]
-              )
+              runValidationTasks(fieldName, modelFields[fieldName])
             );
             return promises;
           }, [])
@@ -631,132 +382,11 @@ export default function EventsUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          const promises = [];
-          const attendeessToLinkMap = new Map();
-          const attendeessToUnLinkMap = new Map();
-          const attendeessMap = new Map();
-          const linkedAttendeessMap = new Map();
-          attendeess.forEach((r) => {
-            const count = attendeessMap.get(getIDValue.attendeess?.(r));
-            const newCount = count ? count + 1 : 1;
-            attendeessMap.set(getIDValue.attendeess?.(r), newCount);
-          });
-          linkedAttendeess.forEach((r) => {
-            const count = linkedAttendeessMap.get(getIDValue.attendeess?.(r));
-            const newCount = count ? count + 1 : 1;
-            linkedAttendeessMap.set(getIDValue.attendeess?.(r), newCount);
-          });
-          linkedAttendeessMap.forEach((count, id) => {
-            const newCount = attendeessMap.get(id);
-            if (newCount) {
-              const diffCount = count - newCount;
-              if (diffCount > 0) {
-                attendeessToUnLinkMap.set(id, diffCount);
-              }
-            } else {
-              attendeessToUnLinkMap.set(id, count);
-            }
-          });
-          attendeessMap.forEach((count, id) => {
-            const originalCount = linkedAttendeessMap.get(id);
-            if (originalCount) {
-              const diffCount = count - originalCount;
-              if (diffCount > 0) {
-                attendeessToLinkMap.set(id, diffCount);
-              }
-            } else {
-              attendeessToLinkMap.set(id, count);
-            }
-          });
-          attendeessToUnLinkMap.forEach(async (count, id) => {
-            const recordKeys = JSON.parse(id);
-            const attendeesEventsRecords = await DataStore.query(
-              AttendeesEvents,
-              (r) =>
-                r.and((r) => {
-                  return [
-                    r.attendeesId.eq(recordKeys.id),
-                    r.eventsId.eq(eventsRecord.id),
-                  ];
-                })
-            );
-            for (let i = 0; i < count; i++) {
-              promises.push(DataStore.delete(attendeesEventsRecords[i]));
-            }
-          });
-          attendeessToLinkMap.forEach((count, id) => {
-            const attendeesToLink = attendeesRecords.find((r) =>
-              Object.entries(JSON.parse(id)).every(
-                ([key, value]) => r[key] === value
-              )
-            );
-            for (let i = count; i > 0; i--) {
-              promises.push(
-                DataStore.save(
-                  new AttendeesEvents({
-                    events: eventsRecord,
-                    attendees: attendeesToLink,
-                  })
-                )
-              );
-            }
-          });
-          const modelFieldsToSave = {
-            eventTitle: modelFields.eventTitle,
-            eventType: modelFields.eventType,
-            eventCategory: modelFields.eventCategory,
-            eventTags: modelFields.eventTags,
-            eventStartDate: modelFields.eventStartDate,
-            eventStartTime: modelFields.eventStartTime,
-            eventDesc: modelFields.eventDesc,
-            eventAgenda: modelFields.eventAgenda,
-            eventSpeakers: modelFields.eventSpeakers,
-            eventEndDate: modelFields.eventEndDate,
-            eventEndTime: modelFields.eventEndTime,
-            eventTimeZone: modelFields.eventTimeZone,
-            eventVenueName: modelFields.eventVenueName,
-            eventCountry: modelFields.eventCountry,
-            eventStreetAddress: modelFields.eventStreetAddress,
-            eventCity: modelFields.eventCity,
-            eventState: modelFields.eventState,
-            eventZipCode: modelFields.eventZipCode,
-            eventTicketQuantity: modelFields.eventTicketQuantity,
-            eventTicketCurrency: modelFields.eventTicketCurrency,
-            eventTicketPrice: modelFields.eventTicketPrice,
-            eventTicketSaleStart: modelFields.eventTicketSaleStart,
-            eventTicketSaleEnd: modelFields.eventTicketSaleEnd,
-            promoLinkedin: modelFields.promoLinkedin,
-            promoTwitter: modelFields.promoTwitter,
-            promoFacebook: modelFields.promoFacebook,
-            promoInstagram: modelFields.promoInstagram,
-            promoDiscord: modelFields.promoDiscord,
-            promoDiscountType: modelFields.promoDiscountType,
-            promoDiscountAmount: modelFields.promoDiscountAmount,
-            promoDiscountCode: modelFields.promoDiscountCode,
-            promoDiscountExpiration: modelFields.promoDiscountExpiration,
-            orgName: modelFields.orgName,
-            orgEmail: modelFields.orgEmail,
-            orgCountryCode: modelFields.orgCountryCode,
-            orgPhone: modelFields.orgPhone,
-            orgWebsite: modelFields.orgWebsite,
-            eventCodeofConduct: modelFields.eventCodeofConduct,
-            eventLogo: modelFields.eventLogo,
-            eventImage: modelFields.eventImage,
-            eventVirtualURL: modelFields.eventVirtualURL,
-            eventCreatorName: modelFields.eventCreatorName,
-            eventCreatorImage: modelFields.eventCreatorImage,
-            eventCreatorBio: modelFields.eventCreatorBio,
-            eventCreatorHeadline: modelFields.eventCreatorHeadline,
-            owner: modelFields.owner,
-          };
-          promises.push(
-            DataStore.save(
-              Events.copyOf(eventsRecord, (updated) => {
-                Object.assign(updated, modelFieldsToSave);
-              })
-            )
+          await DataStore.save(
+            Events.copyOf(eventsRecord, (updated) => {
+              Object.assign(updated, modelFields);
+            })
           );
-          await Promise.all(promises);
           if (onSuccess) {
             onSuccess(modelFields);
           }
@@ -769,8 +399,13 @@ export default function EventsUpdateForm(props) {
       {...getOverrideProps(overrides, "EventsUpdateForm")}
       {...rest}
     >
+      <Heading
+        level={4}
+        children="Event Details"
+        {...getOverrideProps(overrides, "SectionalElement0")}
+      ></Heading>
       <TextField
-        label="Event title"
+        label="Title"
         isRequired={false}
         isReadOnly={false}
         value={eventTitle}
@@ -781,13 +416,11 @@ export default function EventsUpdateForm(props) {
               eventTitle: value,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -796,9 +429,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -810,21 +444,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTitle ?? value;
@@ -839,360 +466,256 @@ export default function EventsUpdateForm(props) {
         hasError={errors.eventTitle?.hasError}
         {...getOverrideProps(overrides, "eventTitle")}
       ></TextField>
-      <TextField
-        label="Event type"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventType}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType: value,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventType ?? value;
-          }
-          if (errors.eventType?.hasError) {
-            runValidationTasks("eventType", value);
-          }
-          setEventType(value);
-        }}
-        onBlur={() => runValidationTasks("eventType", eventType)}
-        errorMessage={errors.eventType?.errorMessage}
-        hasError={errors.eventType?.hasError}
-        {...getOverrideProps(overrides, "eventType")}
-      ></TextField>
-      <TextField
-        label="Event category"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCategory}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory: value,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCategory ?? value;
-          }
-          if (errors.eventCategory?.hasError) {
-            runValidationTasks("eventCategory", value);
-          }
-          setEventCategory(value);
-        }}
-        onBlur={() => runValidationTasks("eventCategory", eventCategory)}
-        errorMessage={errors.eventCategory?.errorMessage}
-        hasError={errors.eventCategory?.hasError}
-        {...getOverrideProps(overrides, "eventCategory")}
-      ></TextField>
-      <TextField
-        label="Event tags"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventTags}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags: value,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTags ?? value;
-          }
-          if (errors.eventTags?.hasError) {
-            runValidationTasks("eventTags", value);
-          }
-          setEventTags(value);
-        }}
-        onBlur={() => runValidationTasks("eventTags", eventTags)}
-        errorMessage={errors.eventTags?.errorMessage}
-        hasError={errors.eventTags?.hasError}
-        {...getOverrideProps(overrides, "eventTags")}
-      ></TextField>
-      <TextField
-        label="Event start date"
-        isRequired={false}
-        isReadOnly={false}
-        type="date"
-        value={eventStartDate}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate: value,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventStartDate ?? value;
-          }
-          if (errors.eventStartDate?.hasError) {
-            runValidationTasks("eventStartDate", value);
-          }
-          setEventStartDate(value);
-        }}
-        onBlur={() => runValidationTasks("eventStartDate", eventStartDate)}
-        errorMessage={errors.eventStartDate?.errorMessage}
-        hasError={errors.eventStartDate?.hasError}
-        {...getOverrideProps(overrides, "eventStartDate")}
-      ></TextField>
-      <TextField
-        label="Event start time"
-        isRequired={false}
-        isReadOnly={false}
-        type="time"
-        value={eventStartTime}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime: value,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventStartTime ?? value;
-          }
-          if (errors.eventStartTime?.hasError) {
-            runValidationTasks("eventStartTime", value);
-          }
-          setEventStartTime(value);
-        }}
-        onBlur={() => runValidationTasks("eventStartTime", eventStartTime)}
-        errorMessage={errors.eventStartTime?.errorMessage}
-        hasError={errors.eventStartTime?.hasError}
-        {...getOverrideProps(overrides, "eventStartTime")}
-      ></TextField>
-      <TextField
-        label="Event desc"
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid2")}
+      >
+        <SelectField
+          label="Type"
+          placeholder="Please select an option"
+          isDisabled={false}
+          value={eventType}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType: value,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventType ?? value;
+            }
+            if (errors.eventType?.hasError) {
+              runValidationTasks("eventType", value);
+            }
+            setEventType(value);
+          }}
+          onBlur={() => runValidationTasks("eventType", eventType)}
+          errorMessage={errors.eventType?.errorMessage}
+          hasError={errors.eventType?.hasError}
+          {...getOverrideProps(overrides, "eventType")}
+        >
+          <option
+            children="in-person"
+            value="in-person"
+            {...getOverrideProps(overrides, "eventTypeoption0")}
+          ></option>
+          <option
+            children="virtual"
+            value="virtual"
+            {...getOverrideProps(overrides, "eventTypeoption1")}
+          ></option>
+          <option
+            children="hybrid"
+            value="hybrid"
+            {...getOverrideProps(overrides, "eventTypeoption2")}
+          ></option>
+        </SelectField>
+        <SelectField
+          label="Event category"
+          placeholder="Please select an option"
+          isDisabled={false}
+          value={eventCategory}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory: value,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventCategory ?? value;
+            }
+            if (errors.eventCategory?.hasError) {
+              runValidationTasks("eventCategory", value);
+            }
+            setEventCategory(value);
+          }}
+          onBlur={() => runValidationTasks("eventCategory", eventCategory)}
+          errorMessage={errors.eventCategory?.errorMessage}
+          hasError={errors.eventCategory?.hasError}
+          {...getOverrideProps(overrides, "eventCategory")}
+        >
+          <option
+            children="Social"
+            value="Social"
+            {...getOverrideProps(overrides, "eventCategoryoption0")}
+          ></option>
+          <option
+            children="Corporate"
+            value="Corporate"
+            {...getOverrideProps(overrides, "eventCategoryoption1")}
+          ></option>
+          <option
+            children="Cultural and Arts"
+            value="Cultural and Arts"
+            {...getOverrideProps(overrides, "eventCategoryoption2")}
+          ></option>
+          <option
+            children="Sports"
+            value="Sports"
+            {...getOverrideProps(overrides, "eventCategoryoption3")}
+          ></option>
+          <option
+            children="Charity and Fundraising"
+            value="Charity and Fundraising"
+            {...getOverrideProps(overrides, "eventCategoryoption4")}
+          ></option>
+          <option
+            children="Religious and Spiritual"
+            value="Religious and Spiritual"
+            {...getOverrideProps(overrides, "eventCategoryoption5")}
+          ></option>
+          <option
+            children="Educational"
+            value="Educational"
+            {...getOverrideProps(overrides, "eventCategoryoption6")}
+          ></option>
+          <option
+            children="Networking"
+            value="Networking"
+            {...getOverrideProps(overrides, "eventCategoryoption7")}
+          ></option>
+          <option
+            children="Experiential"
+            value="Experiential"
+            {...getOverrideProps(overrides, "eventCategoryoption8")}
+          ></option>
+          <option
+            children="Fashion and Beauty"
+            value="Fashion and Beauty"
+            {...getOverrideProps(overrides, "eventCategoryoption9")}
+          ></option>
+          <option
+            children="Technology and Innovation"
+            value="Technology and Innovation"
+            {...getOverrideProps(overrides, "eventCategoryoption10")}
+          ></option>
+          <option
+            children="Environmental and Sustainability"
+            value="Environmental and Sustainability"
+            {...getOverrideProps(overrides, "eventCategoryoption11")}
+          ></option>
+          <option
+            children="Health and Wellness"
+            value="Health and Wellness"
+            {...getOverrideProps(overrides, "eventCategoryoption12")}
+          ></option>
+          <option
+            children="Gaming and Entertainment"
+            value="Gaming and Entertainment"
+            {...getOverrideProps(overrides, "eventCategoryoption13")}
+          ></option>
+          <option
+            children="Travel and Tourism"
+            value="Travel and Tourism"
+            {...getOverrideProps(overrides, "eventCategoryoption14")}
+          ></option>
+          <option
+            children="Political and Social Activism"
+            value="Political and Social Activism"
+            {...getOverrideProps(overrides, "eventCategoryoption15")}
+          ></option>
+          <option
+            children="Community"
+            value="Community"
+            {...getOverrideProps(overrides, "eventCategoryoption16")}
+          ></option>
+          <option
+            children="Academic"
+            value="Academic"
+            {...getOverrideProps(overrides, "eventCategoryoption17")}
+          ></option>
+          <option
+            children="Artistic"
+            value="Artistic"
+            {...getOverrideProps(overrides, "eventCategoryoption18")}
+          ></option>
+          <option
+            children="Celebrity"
+            value="Celebrity"
+            {...getOverrideProps(overrides, "eventCategoryoption19")}
+          ></option>
+        </SelectField>
+      </Grid>
+      <TextAreaField
+        label="Description"
         isRequired={false}
         isReadOnly={false}
         value={eventDesc}
@@ -1203,13 +726,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc: value,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -1218,9 +739,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -1232,21 +754,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventDesc ?? value;
@@ -1260,79 +775,9 @@ export default function EventsUpdateForm(props) {
         errorMessage={errors.eventDesc?.errorMessage}
         hasError={errors.eventDesc?.hasError}
         {...getOverrideProps(overrides, "eventDesc")}
-      ></TextField>
-      <TextField
-        label="Event agenda"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventAgenda}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda: value,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventAgenda ?? value;
-          }
-          if (errors.eventAgenda?.hasError) {
-            runValidationTasks("eventAgenda", value);
-          }
-          setEventAgenda(value);
-        }}
-        onBlur={() => runValidationTasks("eventAgenda", eventAgenda)}
-        errorMessage={errors.eventAgenda?.errorMessage}
-        hasError={errors.eventAgenda?.hasError}
-        {...getOverrideProps(overrides, "eventAgenda")}
-      ></TextField>
-      <TextField
-        label="Event speakers"
+      ></TextAreaField>
+      <TextAreaField
+        label="Speaker Details"
         isRequired={false}
         isReadOnly={false}
         value={eventSpeakers}
@@ -1343,13 +788,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers: value,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -1358,9 +801,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -1372,21 +816,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventSpeakers ?? value;
@@ -1400,154 +837,444 @@ export default function EventsUpdateForm(props) {
         errorMessage={errors.eventSpeakers?.errorMessage}
         hasError={errors.eventSpeakers?.hasError}
         {...getOverrideProps(overrides, "eventSpeakers")}
-      ></TextField>
-      <TextField
-        label="Event end date"
+      ></TextAreaField>
+      <Heading
+        level={4}
+        children="Date & Time"
+        {...getOverrideProps(overrides, "SectionalElement1")}
+      ></Heading>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid6")}
+      >
+        <TextField
+          label="Start Date"
+          isRequired={false}
+          isReadOnly={false}
+          type="date"
+          value={eventStartDate}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate: value,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventStartDate ?? value;
+            }
+            if (errors.eventStartDate?.hasError) {
+              runValidationTasks("eventStartDate", value);
+            }
+            setEventStartDate(value);
+          }}
+          onBlur={() => runValidationTasks("eventStartDate", eventStartDate)}
+          errorMessage={errors.eventStartDate?.errorMessage}
+          hasError={errors.eventStartDate?.hasError}
+          {...getOverrideProps(overrides, "eventStartDate")}
+        ></TextField>
+        <TextField
+          label="Event end date"
+          isRequired={false}
+          isReadOnly={false}
+          type="date"
+          value={eventEndDate}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate: value,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventEndDate ?? value;
+            }
+            if (errors.eventEndDate?.hasError) {
+              runValidationTasks("eventEndDate", value);
+            }
+            setEventEndDate(value);
+          }}
+          onBlur={() => runValidationTasks("eventEndDate", eventEndDate)}
+          errorMessage={errors.eventEndDate?.errorMessage}
+          hasError={errors.eventEndDate?.hasError}
+          {...getOverrideProps(overrides, "eventEndDate")}
+        ></TextField>
+      </Grid>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid7")}
+      >
+        <TextField
+          label="Start Time"
+          isRequired={false}
+          isReadOnly={false}
+          type="time"
+          value={eventStartTime}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime: value,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventStartTime ?? value;
+            }
+            if (errors.eventStartTime?.hasError) {
+              runValidationTasks("eventStartTime", value);
+            }
+            setEventStartTime(value);
+          }}
+          onBlur={() => runValidationTasks("eventStartTime", eventStartTime)}
+          errorMessage={errors.eventStartTime?.errorMessage}
+          hasError={errors.eventStartTime?.hasError}
+          {...getOverrideProps(overrides, "eventStartTime")}
+        ></TextField>
+        <TextField
+          label="End Time"
+          isRequired={false}
+          isReadOnly={false}
+          type="time"
+          value={eventEndTime}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime: value,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventEndTime ?? value;
+            }
+            if (errors.eventEndTime?.hasError) {
+              runValidationTasks("eventEndTime", value);
+            }
+            setEventEndTime(value);
+          }}
+          onBlur={() => runValidationTasks("eventEndTime", eventEndTime)}
+          errorMessage={errors.eventEndTime?.errorMessage}
+          hasError={errors.eventEndTime?.hasError}
+          {...getOverrideProps(overrides, "eventEndTime")}
+        ></TextField>
+      </Grid>
+      <Autocomplete
+        label="Time Zone"
         isRequired={false}
         isReadOnly={false}
-        type="date"
-        value={eventEndDate}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate: value,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventEndDate ?? value;
-          }
-          if (errors.eventEndDate?.hasError) {
-            runValidationTasks("eventEndDate", value);
-          }
-          setEventEndDate(value);
+        options={[
+          {
+            id: "UTC",
+            label: "UTC",
+          },
+          {
+            id: "GMT",
+            label: "GMT",
+          },
+          {
+            id: "WET",
+            label: "WET",
+          },
+          {
+            id: "CET",
+            label: "CET",
+          },
+          {
+            id: "EET",
+            label: "EET",
+          },
+          {
+            id: "MSK",
+            label: "MSK",
+          },
+          {
+            id: "AST",
+            label: "AST",
+          },
+          {
+            id: "GST",
+            label: "GST",
+          },
+          {
+            id: "IST",
+            label: "IST",
+          },
+          {
+            id: "PKT",
+            label: "PKT",
+          },
+          {
+            id: "BST",
+            label: "BST",
+          },
+          {
+            id: "NPT",
+            label: "NPT",
+          },
+          {
+            id: "ALMT",
+            label: "ALMT",
+          },
+          {
+            id: "MMST",
+            label: "MMST",
+          },
+          {
+            id: "WIT",
+            label: "WIT",
+          },
+          {
+            id: "ICT",
+            label: "ICT",
+          },
+          {
+            id: "CST",
+            label: "CST",
+          },
+          {
+            id: "JST",
+            label: "JST",
+          },
+          {
+            id: "KST",
+            label: "KST",
+          },
+          {
+            id: "ACST",
+            label: "ACST",
+          },
+          {
+            id: "AEST",
+            label: "AEST",
+          },
+          {
+            id: "ACDT",
+            label: "ACDT",
+          },
+          {
+            id: "AEDT",
+            label: "AEDT",
+          },
+          {
+            id: "NZST",
+            label: "NZST",
+          },
+          {
+            id: "CHADT",
+            label: "CHADT",
+          },
+          {
+            id: "FJT",
+            label: "FJT",
+          },
+          {
+            id: "NRT",
+            label: "NRT",
+          },
+          {
+            id: "GILT",
+            label: "GILT",
+          },
+          {
+            id: "TVT",
+            label: "TVT",
+          },
+          {
+            id: "WAKT",
+            label: "WAKT",
+          },
+          {
+            id: "CHST",
+            label: "CHST",
+          },
+          {
+            id: "SST",
+            label: "SST",
+          },
+          {
+            id: "HST",
+            label: "HST",
+          },
+          {
+            id: "AKST",
+            label: "AKST",
+          },
+          {
+            id: "PST",
+            label: "PST",
+          },
+          {
+            id: "MST",
+            label: "MST",
+          },
+          {
+            id: "EST",
+            label: "EST",
+          },
+          {
+            id: "EDT",
+            label: "EDT",
+          },
+        ]}
+        onSelect={({ id, label }) => {
+          setEventTimeZone(id);
+          runValidationTasks("eventTimeZone", id);
         }}
-        onBlur={() => runValidationTasks("eventEndDate", eventEndDate)}
-        errorMessage={errors.eventEndDate?.errorMessage}
-        hasError={errors.eventEndDate?.hasError}
-        {...getOverrideProps(overrides, "eventEndDate")}
-      ></TextField>
-      <TextField
-        label="Event end time"
-        isRequired={false}
-        isReadOnly={false}
-        type="time"
-        value={eventEndTime}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime: value,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventEndTime ?? value;
-          }
-          if (errors.eventEndTime?.hasError) {
-            runValidationTasks("eventEndTime", value);
-          }
-          setEventEndTime(value);
+        onClear={() => {
+          setEventTimeZone("");
         }}
-        onBlur={() => runValidationTasks("eventEndTime", eventEndTime)}
-        errorMessage={errors.eventEndTime?.errorMessage}
-        hasError={errors.eventEndTime?.hasError}
-        {...getOverrideProps(overrides, "eventEndTime")}
-      ></TextField>
-      <TextField
-        label="Event time zone"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventTimeZone}
+        defaultValue={eventTimeZone}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
@@ -1555,13 +1282,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone: value,
               eventVenueName,
@@ -1570,9 +1295,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -1584,21 +1310,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTimeZone ?? value;
@@ -1611,150 +1330,156 @@ export default function EventsUpdateForm(props) {
         onBlur={() => runValidationTasks("eventTimeZone", eventTimeZone)}
         errorMessage={errors.eventTimeZone?.errorMessage}
         hasError={errors.eventTimeZone?.hasError}
+        labelHidden={false}
         {...getOverrideProps(overrides, "eventTimeZone")}
-      ></TextField>
+      ></Autocomplete>
+      <Heading
+        level={4}
+        children="Location"
+        {...getOverrideProps(overrides, "SectionalElement2")}
+      ></Heading>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid10")}
+      >
+        <TextField
+          label="Venue Name"
+          isRequired={false}
+          isReadOnly={false}
+          value={eventVenueName}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName: value,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventVenueName ?? value;
+            }
+            if (errors.eventVenueName?.hasError) {
+              runValidationTasks("eventVenueName", value);
+            }
+            setEventVenueName(value);
+          }}
+          onBlur={() => runValidationTasks("eventVenueName", eventVenueName)}
+          errorMessage={errors.eventVenueName?.errorMessage}
+          hasError={errors.eventVenueName?.hasError}
+          {...getOverrideProps(overrides, "eventVenueName")}
+        ></TextField>
+        <Autocomplete
+          label="Country"
+          isRequired={false}
+          isReadOnly={false}
+          options={[]}
+          onSelect={({ id, label }) => {
+            setEventCountry(id);
+            runValidationTasks("eventCountry", id);
+          }}
+          onClear={() => {
+            setEventCountry("");
+          }}
+          defaultValue={eventCountry}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry: value,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventCountry ?? value;
+            }
+            if (errors.eventCountry?.hasError) {
+              runValidationTasks("eventCountry", value);
+            }
+            setEventCountry(value);
+          }}
+          onBlur={() => runValidationTasks("eventCountry", eventCountry)}
+          errorMessage={errors.eventCountry?.errorMessage}
+          hasError={errors.eventCountry?.hasError}
+          labelHidden={false}
+          {...getOverrideProps(overrides, "eventCountry")}
+        ></Autocomplete>
+      </Grid>
       <TextField
-        label="Event venue name"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventVenueName}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName: value,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventVenueName ?? value;
-          }
-          if (errors.eventVenueName?.hasError) {
-            runValidationTasks("eventVenueName", value);
-          }
-          setEventVenueName(value);
-        }}
-        onBlur={() => runValidationTasks("eventVenueName", eventVenueName)}
-        errorMessage={errors.eventVenueName?.errorMessage}
-        hasError={errors.eventVenueName?.hasError}
-        {...getOverrideProps(overrides, "eventVenueName")}
-      ></TextField>
-      <TextField
-        label="Event country"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCountry}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry: value,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCountry ?? value;
-          }
-          if (errors.eventCountry?.hasError) {
-            runValidationTasks("eventCountry", value);
-          }
-          setEventCountry(value);
-        }}
-        onBlur={() => runValidationTasks("eventCountry", eventCountry)}
-        errorMessage={errors.eventCountry?.errorMessage}
-        hasError={errors.eventCountry?.hasError}
-        {...getOverrideProps(overrides, "eventCountry")}
-      ></TextField>
-      <TextField
-        label="Event street address"
+        label="Street Address"
         isRequired={false}
         isReadOnly={false}
         value={eventStreetAddress}
@@ -1765,13 +1490,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -1780,9 +1503,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -1794,21 +1518,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventStreetAddress ?? value;
@@ -1825,11 +1542,208 @@ export default function EventsUpdateForm(props) {
         hasError={errors.eventStreetAddress?.hasError}
         {...getOverrideProps(overrides, "eventStreetAddress")}
       ></TextField>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(3, auto)"
+        {...getOverrideProps(overrides, "RowGrid12")}
+      >
+        <TextField
+          label="City"
+          isRequired={false}
+          isReadOnly={false}
+          value={eventCity}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity: value,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventCity ?? value;
+            }
+            if (errors.eventCity?.hasError) {
+              runValidationTasks("eventCity", value);
+            }
+            setEventCity(value);
+          }}
+          onBlur={() => runValidationTasks("eventCity", eventCity)}
+          errorMessage={errors.eventCity?.errorMessage}
+          hasError={errors.eventCity?.hasError}
+          {...getOverrideProps(overrides, "eventCity")}
+        ></TextField>
+        <TextField
+          label="State"
+          isRequired={false}
+          isReadOnly={false}
+          value={eventState}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState: value,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventState ?? value;
+            }
+            if (errors.eventState?.hasError) {
+              runValidationTasks("eventState", value);
+            }
+            setEventState(value);
+          }}
+          onBlur={() => runValidationTasks("eventState", eventState)}
+          errorMessage={errors.eventState?.errorMessage}
+          hasError={errors.eventState?.hasError}
+          {...getOverrideProps(overrides, "eventState")}
+        ></TextField>
+        <TextField
+          label="Zip Code"
+          isRequired={false}
+          isReadOnly={false}
+          type="number"
+          step="any"
+          value={eventZipCode}
+          onChange={(e) => {
+            let value = isNaN(parseInt(e.target.value))
+              ? e.target.value
+              : parseInt(e.target.value);
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode: value,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventZipCode ?? value;
+            }
+            if (errors.eventZipCode?.hasError) {
+              runValidationTasks("eventZipCode", value);
+            }
+            setEventZipCode(value);
+          }}
+          onBlur={() => runValidationTasks("eventZipCode", eventZipCode)}
+          errorMessage={errors.eventZipCode?.errorMessage}
+          hasError={errors.eventZipCode?.hasError}
+          {...getOverrideProps(overrides, "eventZipCode")}
+        ></TextField>
+      </Grid>
       <TextField
-        label="Event city"
+        label="Virtual Event URL (if applicable)"
         isRequired={false}
         isReadOnly={false}
-        value={eventCity}
+        value={eventVirtualURL}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
@@ -1837,24 +1751,23 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
               eventCountry,
               eventStreetAddress,
-              eventCity: value,
+              eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL: value,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -1866,555 +1779,391 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
-            value = result?.eventCity ?? value;
+            value = result?.eventVirtualURL ?? value;
           }
-          if (errors.eventCity?.hasError) {
-            runValidationTasks("eventCity", value);
+          if (errors.eventVirtualURL?.hasError) {
+            runValidationTasks("eventVirtualURL", value);
           }
-          setEventCity(value);
+          setEventVirtualURL(value);
         }}
-        onBlur={() => runValidationTasks("eventCity", eventCity)}
-        errorMessage={errors.eventCity?.errorMessage}
-        hasError={errors.eventCity?.hasError}
-        {...getOverrideProps(overrides, "eventCity")}
+        onBlur={() => runValidationTasks("eventVirtualURL", eventVirtualURL)}
+        errorMessage={errors.eventVirtualURL?.errorMessage}
+        hasError={errors.eventVirtualURL?.hasError}
+        {...getOverrideProps(overrides, "eventVirtualURL")}
       ></TextField>
+      <Heading
+        level={4}
+        children="Pricing"
+        {...getOverrideProps(overrides, "SectionalElement3")}
+      ></Heading>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(3, auto)"
+        {...getOverrideProps(overrides, "RowGrid15")}
+      >
+        <TextField
+          label="Currency"
+          isRequired={false}
+          isReadOnly={false}
+          value={eventTicketCurrency}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency: value,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventTicketCurrency ?? value;
+            }
+            if (errors.eventTicketCurrency?.hasError) {
+              runValidationTasks("eventTicketCurrency", value);
+            }
+            setEventTicketCurrency(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventTicketCurrency", eventTicketCurrency)
+          }
+          errorMessage={errors.eventTicketCurrency?.errorMessage}
+          hasError={errors.eventTicketCurrency?.hasError}
+          {...getOverrideProps(overrides, "eventTicketCurrency")}
+        ></TextField>
+        <TextField
+          label="Price"
+          isRequired={false}
+          isReadOnly={false}
+          type="number"
+          step="any"
+          value={eventTicketPrice}
+          onChange={(e) => {
+            let value = isNaN(parseFloat(e.target.value))
+              ? e.target.value
+              : parseFloat(e.target.value);
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice: value,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventTicketPrice ?? value;
+            }
+            if (errors.eventTicketPrice?.hasError) {
+              runValidationTasks("eventTicketPrice", value);
+            }
+            setEventTicketPrice(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventTicketPrice", eventTicketPrice)
+          }
+          errorMessage={errors.eventTicketPrice?.errorMessage}
+          hasError={errors.eventTicketPrice?.hasError}
+          {...getOverrideProps(overrides, "eventTicketPrice")}
+        ></TextField>
+        <StepperField
+          label="Quantity"
+          isReadOnly={false}
+          isRequired={false}
+          value={eventTicketQuantity}
+          onStepChange={(e) => {
+            let value = e;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity: value,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventTicketQuantity ?? value;
+            }
+            if (errors.eventTicketQuantity?.hasError) {
+              runValidationTasks("eventTicketQuantity", value);
+            }
+            setEventTicketQuantity(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventTicketQuantity", eventTicketQuantity)
+          }
+          errorMessage={errors.eventTicketQuantity?.errorMessage}
+          hasError={errors.eventTicketQuantity?.hasError}
+          {...getOverrideProps(overrides, "eventTicketQuantity")}
+        ></StepperField>
+      </Grid>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid16")}
+      >
+        <TextField
+          label="Sale Start"
+          isRequired={false}
+          isReadOnly={false}
+          type="datetime-local"
+          value={
+            eventTicketSaleStart &&
+            convertToLocal(new Date(eventTicketSaleStart))
+          }
+          onChange={(e) => {
+            let value =
+              e.target.value === ""
+                ? ""
+                : new Date(e.target.value).toISOString();
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart: value,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventTicketSaleStart ?? value;
+            }
+            if (errors.eventTicketSaleStart?.hasError) {
+              runValidationTasks("eventTicketSaleStart", value);
+            }
+            setEventTicketSaleStart(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventTicketSaleStart", eventTicketSaleStart)
+          }
+          errorMessage={errors.eventTicketSaleStart?.errorMessage}
+          hasError={errors.eventTicketSaleStart?.hasError}
+          {...getOverrideProps(overrides, "eventTicketSaleStart")}
+        ></TextField>
+        <TextField
+          label="Sale End"
+          isRequired={false}
+          isReadOnly={false}
+          type="datetime-local"
+          value={
+            eventTicketSaleEnd && convertToLocal(new Date(eventTicketSaleEnd))
+          }
+          onChange={(e) => {
+            let value =
+              e.target.value === ""
+                ? ""
+                : new Date(e.target.value).toISOString();
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd: value,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventTicketSaleEnd ?? value;
+            }
+            if (errors.eventTicketSaleEnd?.hasError) {
+              runValidationTasks("eventTicketSaleEnd", value);
+            }
+            setEventTicketSaleEnd(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventTicketSaleEnd", eventTicketSaleEnd)
+          }
+          errorMessage={errors.eventTicketSaleEnd?.errorMessage}
+          hasError={errors.eventTicketSaleEnd?.hasError}
+          {...getOverrideProps(overrides, "eventTicketSaleEnd")}
+        ></TextField>
+      </Grid>
+      <Heading
+        level={4}
+        children="Promotions & Discounts"
+        {...getOverrideProps(overrides, "SectionalElement4")}
+      ></Heading>
       <TextField
-        label="Event state"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventState}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState: value,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventState ?? value;
-          }
-          if (errors.eventState?.hasError) {
-            runValidationTasks("eventState", value);
-          }
-          setEventState(value);
-        }}
-        onBlur={() => runValidationTasks("eventState", eventState)}
-        errorMessage={errors.eventState?.errorMessage}
-        hasError={errors.eventState?.hasError}
-        {...getOverrideProps(overrides, "eventState")}
-      ></TextField>
-      <TextField
-        label="Event zip code"
-        isRequired={false}
-        isReadOnly={false}
-        type="number"
-        step="any"
-        value={eventZipCode}
-        onChange={(e) => {
-          let value = isNaN(parseInt(e.target.value))
-            ? e.target.value
-            : parseInt(e.target.value);
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode: value,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventZipCode ?? value;
-          }
-          if (errors.eventZipCode?.hasError) {
-            runValidationTasks("eventZipCode", value);
-          }
-          setEventZipCode(value);
-        }}
-        onBlur={() => runValidationTasks("eventZipCode", eventZipCode)}
-        errorMessage={errors.eventZipCode?.errorMessage}
-        hasError={errors.eventZipCode?.hasError}
-        {...getOverrideProps(overrides, "eventZipCode")}
-      ></TextField>
-      <TextField
-        label="Event ticket quantity"
-        isRequired={false}
-        isReadOnly={false}
-        type="number"
-        step="any"
-        value={eventTicketQuantity}
-        onChange={(e) => {
-          let value = isNaN(parseInt(e.target.value))
-            ? e.target.value
-            : parseInt(e.target.value);
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity: value,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTicketQuantity ?? value;
-          }
-          if (errors.eventTicketQuantity?.hasError) {
-            runValidationTasks("eventTicketQuantity", value);
-          }
-          setEventTicketQuantity(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("eventTicketQuantity", eventTicketQuantity)
-        }
-        errorMessage={errors.eventTicketQuantity?.errorMessage}
-        hasError={errors.eventTicketQuantity?.hasError}
-        {...getOverrideProps(overrides, "eventTicketQuantity")}
-      ></TextField>
-      <TextField
-        label="Event ticket currency"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventTicketCurrency}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency: value,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTicketCurrency ?? value;
-          }
-          if (errors.eventTicketCurrency?.hasError) {
-            runValidationTasks("eventTicketCurrency", value);
-          }
-          setEventTicketCurrency(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("eventTicketCurrency", eventTicketCurrency)
-        }
-        errorMessage={errors.eventTicketCurrency?.errorMessage}
-        hasError={errors.eventTicketCurrency?.hasError}
-        {...getOverrideProps(overrides, "eventTicketCurrency")}
-      ></TextField>
-      <TextField
-        label="Event ticket price"
-        isRequired={false}
-        isReadOnly={false}
-        type="number"
-        step="any"
-        value={eventTicketPrice}
-        onChange={(e) => {
-          let value = isNaN(parseFloat(e.target.value))
-            ? e.target.value
-            : parseFloat(e.target.value);
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice: value,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTicketPrice ?? value;
-          }
-          if (errors.eventTicketPrice?.hasError) {
-            runValidationTasks("eventTicketPrice", value);
-          }
-          setEventTicketPrice(value);
-        }}
-        onBlur={() => runValidationTasks("eventTicketPrice", eventTicketPrice)}
-        errorMessage={errors.eventTicketPrice?.errorMessage}
-        hasError={errors.eventTicketPrice?.hasError}
-        {...getOverrideProps(overrides, "eventTicketPrice")}
-      ></TextField>
-      <TextField
-        label="Event ticket sale start"
-        isRequired={false}
-        isReadOnly={false}
-        type="datetime-local"
-        value={
-          eventTicketSaleStart && convertToLocal(new Date(eventTicketSaleStart))
-        }
-        onChange={(e) => {
-          let value =
-            e.target.value === "" ? "" : new Date(e.target.value).toISOString();
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart: value,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTicketSaleStart ?? value;
-          }
-          if (errors.eventTicketSaleStart?.hasError) {
-            runValidationTasks("eventTicketSaleStart", value);
-          }
-          setEventTicketSaleStart(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("eventTicketSaleStart", eventTicketSaleStart)
-        }
-        errorMessage={errors.eventTicketSaleStart?.errorMessage}
-        hasError={errors.eventTicketSaleStart?.hasError}
-        {...getOverrideProps(overrides, "eventTicketSaleStart")}
-      ></TextField>
-      <TextField
-        label="Event ticket sale end"
-        isRequired={false}
-        isReadOnly={false}
-        type="datetime-local"
-        value={
-          eventTicketSaleEnd && convertToLocal(new Date(eventTicketSaleEnd))
-        }
-        onChange={(e) => {
-          let value =
-            e.target.value === "" ? "" : new Date(e.target.value).toISOString();
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd: value,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTicketSaleEnd ?? value;
-          }
-          if (errors.eventTicketSaleEnd?.hasError) {
-            runValidationTasks("eventTicketSaleEnd", value);
-          }
-          setEventTicketSaleEnd(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("eventTicketSaleEnd", eventTicketSaleEnd)
-        }
-        errorMessage={errors.eventTicketSaleEnd?.errorMessage}
-        hasError={errors.eventTicketSaleEnd?.hasError}
-        {...getOverrideProps(overrides, "eventTicketSaleEnd")}
-      ></TextField>
-      <TextField
-        label="Promo linkedin"
+        label="Linkedin"
         isRequired={false}
         isReadOnly={false}
         value={promoLinkedin}
@@ -2425,13 +2174,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -2440,9 +2187,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin: value,
@@ -2454,21 +2202,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoLinkedin ?? value;
@@ -2484,7 +2225,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "promoLinkedin")}
       ></TextField>
       <TextField
-        label="Promo twitter"
+        label="Twitter"
         isRequired={false}
         isReadOnly={false}
         value={promoTwitter}
@@ -2495,13 +2236,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -2510,9 +2249,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -2524,21 +2264,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoTwitter ?? value;
@@ -2554,7 +2287,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "promoTwitter")}
       ></TextField>
       <TextField
-        label="Promo facebook"
+        label="Facebook"
         isRequired={false}
         isReadOnly={false}
         value={promoFacebook}
@@ -2565,13 +2298,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -2580,9 +2311,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -2594,21 +2326,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoFacebook ?? value;
@@ -2624,7 +2349,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "promoFacebook")}
       ></TextField>
       <TextField
-        label="Promo instagram"
+        label="Instagram"
         isRequired={false}
         isReadOnly={false}
         value={promoInstagram}
@@ -2635,13 +2360,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -2650,9 +2373,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -2664,21 +2388,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoInstagram ?? value;
@@ -2694,7 +2411,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "promoInstagram")}
       ></TextField>
       <TextField
-        label="Promo discord"
+        label="Discord"
         isRequired={false}
         isReadOnly={false}
         value={promoDiscord}
@@ -2705,13 +2422,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -2720,9 +2435,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -2734,21 +2450,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscord ?? value;
@@ -2763,11 +2472,446 @@ export default function EventsUpdateForm(props) {
         hasError={errors.promoDiscord?.hasError}
         {...getOverrideProps(overrides, "promoDiscord")}
       ></TextField>
-      <TextField
-        label="Promo discount type"
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid23")}
+      >
+        <SelectField
+          label="Discount Type"
+          placeholder="Please select an option"
+          isDisabled={false}
+          value={promoDiscountType}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType: value,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.promoDiscountType ?? value;
+            }
+            if (errors.promoDiscountType?.hasError) {
+              runValidationTasks("promoDiscountType", value);
+            }
+            setPromoDiscountType(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("promoDiscountType", promoDiscountType)
+          }
+          errorMessage={errors.promoDiscountType?.errorMessage}
+          hasError={errors.promoDiscountType?.hasError}
+          {...getOverrideProps(overrides, "promoDiscountType")}
+        >
+          <option
+            children="Amount"
+            value="Amount"
+            {...getOverrideProps(overrides, "promoDiscountTypeoption0")}
+          ></option>
+          <option
+            children="Percentage"
+            value="Percentage"
+            {...getOverrideProps(overrides, "promoDiscountTypeoption1")}
+          ></option>
+        </SelectField>
+        <TextField
+          label="Discount Amount"
+          isRequired={false}
+          isReadOnly={false}
+          type="number"
+          step="any"
+          value={promoDiscountAmount}
+          onChange={(e) => {
+            let value = isNaN(parseFloat(e.target.value))
+              ? e.target.value
+              : parseFloat(e.target.value);
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount: value,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.promoDiscountAmount ?? value;
+            }
+            if (errors.promoDiscountAmount?.hasError) {
+              runValidationTasks("promoDiscountAmount", value);
+            }
+            setPromoDiscountAmount(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("promoDiscountAmount", promoDiscountAmount)
+          }
+          errorMessage={errors.promoDiscountAmount?.errorMessage}
+          hasError={errors.promoDiscountAmount?.hasError}
+          {...getOverrideProps(overrides, "promoDiscountAmount")}
+        ></TextField>
+      </Grid>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid24")}
+      >
+        <TextField
+          label="Discount Code"
+          isRequired={false}
+          isReadOnly={false}
+          value={promoDiscountCode}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode: value,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.promoDiscountCode ?? value;
+            }
+            if (errors.promoDiscountCode?.hasError) {
+              runValidationTasks("promoDiscountCode", value);
+            }
+            setPromoDiscountCode(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("promoDiscountCode", promoDiscountCode)
+          }
+          errorMessage={errors.promoDiscountCode?.errorMessage}
+          hasError={errors.promoDiscountCode?.hasError}
+          {...getOverrideProps(overrides, "promoDiscountCode")}
+        ></TextField>
+        <TextField
+          label="Discount Expiration"
+          isRequired={false}
+          isReadOnly={false}
+          type="datetime-local"
+          value={
+            promoDiscountExpiration &&
+            convertToLocal(new Date(promoDiscountExpiration))
+          }
+          onChange={(e) => {
+            let value =
+              e.target.value === ""
+                ? ""
+                : new Date(e.target.value).toISOString();
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration: value,
+                eventCreatorName,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.promoDiscountExpiration ?? value;
+            }
+            if (errors.promoDiscountExpiration?.hasError) {
+              runValidationTasks("promoDiscountExpiration", value);
+            }
+            setPromoDiscountExpiration(value);
+          }}
+          onBlur={() =>
+            runValidationTasks(
+              "promoDiscountExpiration",
+              promoDiscountExpiration
+            )
+          }
+          errorMessage={errors.promoDiscountExpiration?.errorMessage}
+          hasError={errors.promoDiscountExpiration?.hasError}
+          {...getOverrideProps(overrides, "promoDiscountExpiration")}
+        ></TextField>
+      </Grid>
+      <Heading
+        level={4}
+        children="Creator Info"
+        {...getOverrideProps(overrides, "SectionalElement5")}
+      ></Heading>
+      <Grid
+        columnGap="inherit"
+        rowGap="inherit"
+        templateColumns="repeat(2, auto)"
+        {...getOverrideProps(overrides, "RowGrid26")}
+      >
+        <TextField
+          label="Full Name"
+          isRequired={false}
+          isReadOnly={false}
+          value={eventCreatorName}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName: value,
+                eventCreatorHeadline,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventCreatorName ?? value;
+            }
+            if (errors.eventCreatorName?.hasError) {
+              runValidationTasks("eventCreatorName", value);
+            }
+            setEventCreatorName(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventCreatorName", eventCreatorName)
+          }
+          errorMessage={errors.eventCreatorName?.errorMessage}
+          hasError={errors.eventCreatorName?.hasError}
+          {...getOverrideProps(overrides, "eventCreatorName")}
+        ></TextField>
+        <TextField
+          label="Headline"
+          isRequired={false}
+          isReadOnly={false}
+          value={eventCreatorHeadline}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (onChange) {
+              const modelFields = {
+                eventTitle,
+                eventType,
+                eventCategory,
+                eventDesc,
+                eventSpeakers,
+                eventStartDate,
+                eventEndDate,
+                eventStartTime,
+                eventEndTime,
+                eventTimeZone,
+                eventVenueName,
+                eventCountry,
+                eventStreetAddress,
+                eventCity,
+                eventState,
+                eventZipCode,
+                eventVirtualURL,
+                eventTicketCurrency,
+                eventTicketPrice,
+                eventTicketQuantity,
+                eventTicketSaleStart,
+                eventTicketSaleEnd,
+                promoLinkedin,
+                promoTwitter,
+                promoFacebook,
+                promoInstagram,
+                promoDiscord,
+                promoDiscountType,
+                promoDiscountAmount,
+                promoDiscountCode,
+                promoDiscountExpiration,
+                eventCreatorName,
+                eventCreatorHeadline: value,
+                eventCreatorBio,
+                orgName,
+                orgEmail,
+                orgPhone,
+                orgWebsite,
+                eventCodeofConduct,
+              };
+              const result = onChange(modelFields);
+              value = result?.eventCreatorHeadline ?? value;
+            }
+            if (errors.eventCreatorHeadline?.hasError) {
+              runValidationTasks("eventCreatorHeadline", value);
+            }
+            setEventCreatorHeadline(value);
+          }}
+          onBlur={() =>
+            runValidationTasks("eventCreatorHeadline", eventCreatorHeadline)
+          }
+          errorMessage={errors.eventCreatorHeadline?.errorMessage}
+          hasError={errors.eventCreatorHeadline?.hasError}
+          {...getOverrideProps(overrides, "eventCreatorHeadline")}
+        ></TextField>
+      </Grid>
+      <TextAreaField
+        label="Bio"
         isRequired={false}
         isReadOnly={false}
-        value={promoDiscountType}
+        value={eventCreatorBio}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
@@ -2775,13 +2919,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -2790,234 +2932,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType: value,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
               eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.promoDiscountType ?? value;
-          }
-          if (errors.promoDiscountType?.hasError) {
-            runValidationTasks("promoDiscountType", value);
-          }
-          setPromoDiscountType(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("promoDiscountType", promoDiscountType)
-        }
-        errorMessage={errors.promoDiscountType?.errorMessage}
-        hasError={errors.promoDiscountType?.hasError}
-        {...getOverrideProps(overrides, "promoDiscountType")}
-      ></TextField>
-      <TextField
-        label="Promo discount amount"
-        isRequired={false}
-        isReadOnly={false}
-        type="number"
-        step="any"
-        value={promoDiscountAmount}
-        onChange={(e) => {
-          let value = isNaN(parseFloat(e.target.value))
-            ? e.target.value
-            : parseFloat(e.target.value);
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
               eventTicketCurrency,
               eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount: value,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.promoDiscountAmount ?? value;
-          }
-          if (errors.promoDiscountAmount?.hasError) {
-            runValidationTasks("promoDiscountAmount", value);
-          }
-          setPromoDiscountAmount(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("promoDiscountAmount", promoDiscountAmount)
-        }
-        errorMessage={errors.promoDiscountAmount?.errorMessage}
-        hasError={errors.promoDiscountAmount?.hasError}
-        {...getOverrideProps(overrides, "promoDiscountAmount")}
-      ></TextField>
-      <TextField
-        label="Promo discount code"
-        isRequired={false}
-        isReadOnly={false}
-        value={promoDiscountCode}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
               eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode: value,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.promoDiscountCode ?? value;
-          }
-          if (errors.promoDiscountCode?.hasError) {
-            runValidationTasks("promoDiscountCode", value);
-          }
-          setPromoDiscountCode(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("promoDiscountCode", promoDiscountCode)
-        }
-        errorMessage={errors.promoDiscountCode?.errorMessage}
-        hasError={errors.promoDiscountCode?.hasError}
-        {...getOverrideProps(overrides, "promoDiscountCode")}
-      ></TextField>
-      <TextField
-        label="Promo discount expiration"
-        isRequired={false}
-        isReadOnly={false}
-        type="datetime-local"
-        value={
-          promoDiscountExpiration &&
-          convertToLocal(new Date(promoDiscountExpiration))
-        }
-        onChange={(e) => {
-          let value =
-            e.target.value === "" ? "" : new Date(e.target.value).toISOString();
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -3028,40 +2946,36 @@ export default function EventsUpdateForm(props) {
               promoDiscountType,
               promoDiscountAmount,
               promoDiscountCode,
-              promoDiscountExpiration: value,
+              promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio: value,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
-            value = result?.promoDiscountExpiration ?? value;
+            value = result?.eventCreatorBio ?? value;
           }
-          if (errors.promoDiscountExpiration?.hasError) {
-            runValidationTasks("promoDiscountExpiration", value);
+          if (errors.eventCreatorBio?.hasError) {
+            runValidationTasks("eventCreatorBio", value);
           }
-          setPromoDiscountExpiration(value);
+          setEventCreatorBio(value);
         }}
-        onBlur={() =>
-          runValidationTasks("promoDiscountExpiration", promoDiscountExpiration)
-        }
-        errorMessage={errors.promoDiscountExpiration?.errorMessage}
-        hasError={errors.promoDiscountExpiration?.hasError}
-        {...getOverrideProps(overrides, "promoDiscountExpiration")}
-      ></TextField>
+        onBlur={() => runValidationTasks("eventCreatorBio", eventCreatorBio)}
+        errorMessage={errors.eventCreatorBio?.errorMessage}
+        hasError={errors.eventCreatorBio?.hasError}
+        {...getOverrideProps(overrides, "eventCreatorBio")}
+      ></TextAreaField>
+      <Heading
+        level={4}
+        children="Contact Info"
+        {...getOverrideProps(overrides, "SectionalElement6")}
+      ></Heading>
       <TextField
-        label="Org name"
+        label="Organization Name (if applicable)"
         isRequired={false}
         isReadOnly={false}
         value={orgName}
@@ -3072,13 +2986,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -3087,9 +2999,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -3101,21 +3014,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName: value,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgName ?? value;
@@ -3131,7 +3037,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "orgName")}
       ></TextField>
       <TextField
-        label="Org email"
+        label="Organizer / Support Email"
         isRequired={false}
         isReadOnly={false}
         value={orgEmail}
@@ -3142,13 +3048,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -3157,9 +3061,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -3171,21 +3076,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail: value,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgEmail ?? value;
@@ -3201,77 +3099,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "orgEmail")}
       ></TextField>
       <TextField
-        label="Org country code"
-        isRequired={false}
-        isReadOnly={false}
-        value={orgCountryCode}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode: value,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.orgCountryCode ?? value;
-          }
-          if (errors.orgCountryCode?.hasError) {
-            runValidationTasks("orgCountryCode", value);
-          }
-          setOrgCountryCode(value);
-        }}
-        onBlur={() => runValidationTasks("orgCountryCode", orgCountryCode)}
-        errorMessage={errors.orgCountryCode?.errorMessage}
-        hasError={errors.orgCountryCode?.hasError}
-        {...getOverrideProps(overrides, "orgCountryCode")}
-      ></TextField>
-      <TextField
-        label="Org phone"
+        label="Organizer / Support Phone"
         isRequired={false}
         isReadOnly={false}
         type="tel"
@@ -3283,13 +3111,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -3298,9 +3124,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -3312,21 +3139,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone: value,
               orgWebsite,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgPhone ?? value;
@@ -3342,7 +3162,7 @@ export default function EventsUpdateForm(props) {
         {...getOverrideProps(overrides, "orgPhone")}
       ></TextField>
       <TextField
-        label="Org website"
+        label="Company Website "
         isRequired={false}
         isReadOnly={false}
         value={orgWebsite}
@@ -3353,13 +3173,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -3368,9 +3186,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -3382,21 +3201,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite: value,
               eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgWebsite ?? value;
@@ -3411,8 +3223,13 @@ export default function EventsUpdateForm(props) {
         hasError={errors.orgWebsite?.hasError}
         {...getOverrideProps(overrides, "orgWebsite")}
       ></TextField>
-      <TextField
-        label="Event codeof conduct"
+      <Heading
+        level={4}
+        children="Other Details"
+        {...getOverrideProps(overrides, "SectionalElement7")}
+      ></Heading>
+      <TextAreaField
+        label="Code of Conduct"
         isRequired={false}
         isReadOnly={false}
         value={eventCodeofConduct}
@@ -3423,13 +3240,11 @@ export default function EventsUpdateForm(props) {
               eventTitle,
               eventType,
               eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
               eventDesc,
-              eventAgenda,
               eventSpeakers,
+              eventStartDate,
               eventEndDate,
+              eventStartTime,
               eventEndTime,
               eventTimeZone,
               eventVenueName,
@@ -3438,9 +3253,10 @@ export default function EventsUpdateForm(props) {
               eventCity,
               eventState,
               eventZipCode,
-              eventTicketQuantity,
+              eventVirtualURL,
               eventTicketCurrency,
               eventTicketPrice,
+              eventTicketQuantity,
               eventTicketSaleStart,
               eventTicketSaleEnd,
               promoLinkedin,
@@ -3452,21 +3268,14 @@ export default function EventsUpdateForm(props) {
               promoDiscountAmount,
               promoDiscountCode,
               promoDiscountExpiration,
+              eventCreatorName,
+              eventCreatorHeadline,
+              eventCreatorBio,
               orgName,
               orgEmail,
-              orgCountryCode,
               orgPhone,
               orgWebsite,
               eventCodeofConduct: value,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCodeofConduct ?? value;
@@ -3482,713 +3291,17 @@ export default function EventsUpdateForm(props) {
         errorMessage={errors.eventCodeofConduct?.errorMessage}
         hasError={errors.eventCodeofConduct?.hasError}
         {...getOverrideProps(overrides, "eventCodeofConduct")}
-      ></TextField>
-      <TextField
-        label="Event logo"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventLogo}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo: value,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventLogo ?? value;
-          }
-          if (errors.eventLogo?.hasError) {
-            runValidationTasks("eventLogo", value);
-          }
-          setEventLogo(value);
-        }}
-        onBlur={() => runValidationTasks("eventLogo", eventLogo)}
-        errorMessage={errors.eventLogo?.errorMessage}
-        hasError={errors.eventLogo?.hasError}
-        {...getOverrideProps(overrides, "eventLogo")}
-      ></TextField>
-      <TextField
-        label="Event image"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventImage}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage: value,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventImage ?? value;
-          }
-          if (errors.eventImage?.hasError) {
-            runValidationTasks("eventImage", value);
-          }
-          setEventImage(value);
-        }}
-        onBlur={() => runValidationTasks("eventImage", eventImage)}
-        errorMessage={errors.eventImage?.errorMessage}
-        hasError={errors.eventImage?.hasError}
-        {...getOverrideProps(overrides, "eventImage")}
-      ></TextField>
-      <TextField
-        label="Event virtual url"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventVirtualURL}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL: value,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventVirtualURL ?? value;
-          }
-          if (errors.eventVirtualURL?.hasError) {
-            runValidationTasks("eventVirtualURL", value);
-          }
-          setEventVirtualURL(value);
-        }}
-        onBlur={() => runValidationTasks("eventVirtualURL", eventVirtualURL)}
-        errorMessage={errors.eventVirtualURL?.errorMessage}
-        hasError={errors.eventVirtualURL?.hasError}
-        {...getOverrideProps(overrides, "eventVirtualURL")}
-      ></TextField>
-      <TextField
-        label="Event creator name"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCreatorName}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName: value,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCreatorName ?? value;
-          }
-          if (errors.eventCreatorName?.hasError) {
-            runValidationTasks("eventCreatorName", value);
-          }
-          setEventCreatorName(value);
-        }}
-        onBlur={() => runValidationTasks("eventCreatorName", eventCreatorName)}
-        errorMessage={errors.eventCreatorName?.errorMessage}
-        hasError={errors.eventCreatorName?.hasError}
-        {...getOverrideProps(overrides, "eventCreatorName")}
-      ></TextField>
-      <TextField
-        label="Event creator image"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCreatorImage}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage: value,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCreatorImage ?? value;
-          }
-          if (errors.eventCreatorImage?.hasError) {
-            runValidationTasks("eventCreatorImage", value);
-          }
-          setEventCreatorImage(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("eventCreatorImage", eventCreatorImage)
-        }
-        errorMessage={errors.eventCreatorImage?.errorMessage}
-        hasError={errors.eventCreatorImage?.hasError}
-        {...getOverrideProps(overrides, "eventCreatorImage")}
-      ></TextField>
-      <TextField
-        label="Event creator bio"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCreatorBio}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio: value,
-              eventCreatorHeadline,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCreatorBio ?? value;
-          }
-          if (errors.eventCreatorBio?.hasError) {
-            runValidationTasks("eventCreatorBio", value);
-          }
-          setEventCreatorBio(value);
-        }}
-        onBlur={() => runValidationTasks("eventCreatorBio", eventCreatorBio)}
-        errorMessage={errors.eventCreatorBio?.errorMessage}
-        hasError={errors.eventCreatorBio?.hasError}
-        {...getOverrideProps(overrides, "eventCreatorBio")}
-      ></TextField>
-      <TextField
-        label="Event creator headline"
-        isRequired={false}
-        isReadOnly={false}
-        value={eventCreatorHeadline}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline: value,
-              owner,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventCreatorHeadline ?? value;
-          }
-          if (errors.eventCreatorHeadline?.hasError) {
-            runValidationTasks("eventCreatorHeadline", value);
-          }
-          setEventCreatorHeadline(value);
-        }}
-        onBlur={() =>
-          runValidationTasks("eventCreatorHeadline", eventCreatorHeadline)
-        }
-        errorMessage={errors.eventCreatorHeadline?.errorMessage}
-        hasError={errors.eventCreatorHeadline?.hasError}
-        {...getOverrideProps(overrides, "eventCreatorHeadline")}
-      ></TextField>
-      <TextField
-        label="Owner"
-        isRequired={false}
-        isReadOnly={false}
-        value={owner}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner: value,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.owner ?? value;
-          }
-          if (errors.owner?.hasError) {
-            runValidationTasks("owner", value);
-          }
-          setOwner(value);
-        }}
-        onBlur={() => runValidationTasks("owner", owner)}
-        errorMessage={errors.owner?.errorMessage}
-        hasError={errors.owner?.hasError}
-        {...getOverrideProps(overrides, "owner")}
-      ></TextField>
-      <ArrayField
-        onChange={async (items) => {
-          let values = items;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventTags,
-              eventStartDate,
-              eventStartTime,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventEndDate,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventTicketQuantity,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              orgName,
-              orgEmail,
-              orgCountryCode,
-              orgPhone,
-              orgWebsite,
-              eventCodeofConduct,
-              eventLogo,
-              eventImage,
-              eventVirtualURL,
-              eventCreatorName,
-              eventCreatorImage,
-              eventCreatorBio,
-              eventCreatorHeadline,
-              owner,
-              attendeess: values,
-            };
-            const result = onChange(modelFields);
-            values = result?.attendeess ?? values;
-          }
-          setAttendeess(values);
-          setCurrentAttendeessValue(undefined);
-          setCurrentAttendeessDisplayValue("");
-        }}
-        currentFieldValue={currentAttendeessValue}
-        label={"Attendeess"}
-        items={attendeess}
-        hasError={errors?.attendeess?.hasError}
-        runValidationTasks={async () =>
-          await runValidationTasks("attendeess", currentAttendeessValue)
-        }
-        errorMessage={errors?.attendeess?.errorMessage}
-        getBadgeText={getDisplayValue.attendeess}
-        setFieldValue={(model) => {
-          setCurrentAttendeessDisplayValue(
-            model ? getDisplayValue.attendeess(model) : ""
-          );
-          setCurrentAttendeessValue(model);
-        }}
-        inputFieldRef={attendeessRef}
-        defaultFieldValue={""}
-      >
-        <Autocomplete
-          label="Attendeess"
-          isRequired={false}
-          isReadOnly={false}
-          placeholder="Search Attendees"
-          value={currentAttendeessDisplayValue}
-          options={attendeesRecords
-            .filter((r) => !attendeessIdSet.has(getIDValue.attendeess?.(r)))
-            .map((r) => ({
-              id: getIDValue.attendeess?.(r),
-              label: getDisplayValue.attendeess?.(r),
-            }))}
-          onSelect={({ id, label }) => {
-            setCurrentAttendeessValue(
-              attendeesRecords.find((r) =>
-                Object.entries(JSON.parse(id)).every(
-                  ([key, value]) => r[key] === value
-                )
-              )
-            );
-            setCurrentAttendeessDisplayValue(label);
-            runValidationTasks("attendeess", label);
-          }}
-          onClear={() => {
-            setCurrentAttendeessDisplayValue("");
-          }}
-          onChange={(e) => {
-            let { value } = e.target;
-            if (errors.attendeess?.hasError) {
-              runValidationTasks("attendeess", value);
-            }
-            setCurrentAttendeessDisplayValue(value);
-            setCurrentAttendeessValue(undefined);
-          }}
-          onBlur={() =>
-            runValidationTasks("attendeess", currentAttendeessDisplayValue)
-          }
-          errorMessage={errors.attendeess?.errorMessage}
-          hasError={errors.attendeess?.hasError}
-          ref={attendeessRef}
-          labelHidden={true}
-          {...getOverrideProps(overrides, "attendeess")}
-        ></Autocomplete>
-      </ArrayField>
+      ></TextAreaField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}
       >
-        <Button
-          children="Reset"
-          type="reset"
-          onClick={(event) => {
-            event.preventDefault();
-            resetStateValues();
-          }}
-          isDisabled={!(idProp || eventsModelProp)}
-          {...getOverrideProps(overrides, "ResetButton")}
-        ></Button>
         <Flex
           gap="15px"
           {...getOverrideProps(overrides, "RightAlignCTASubFlex")}
         >
           <Button
-            children="Submit"
+            children="Save Changes"
             type="submit"
             variation="primary"
             isDisabled={

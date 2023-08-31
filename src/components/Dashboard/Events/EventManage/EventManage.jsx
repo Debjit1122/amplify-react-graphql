@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { BsCalendarCheck } from "react-icons/bs"
+import React, { useState, useEffect } from 'react'
+import { BsCalendar, BsCalendarCheck } from "react-icons/bs"
 import { BiTime } from "react-icons/bi"
 import { MdOutlineLocationOn } from "react-icons/md"
 import ApexChart1 from '../Charts/ApexChart1'
@@ -7,12 +7,27 @@ import ApexChart2 from '../Charts/ApexChart2'
 import AnnouncementForm from '../AnnouncementForm/AnnouncementForm'
 import EventData from '../../../../routes/Dashboard/data/eventData'
 import { useParams } from 'react-router-dom'
+import { EventsUpdateForm } from '../../../../ui-components'
+import { DataStore } from 'aws-amplify';
+import { AttendeesEvents } from '../../../../models';
 const EventManage = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [formSubmitted, setFormSubmitted] = useState(false); // New state variable
+    const openModal = () => {
+        setModalVisible(true);
+        setFormSubmitted(false);
+    };
+
+    // Function to close the modal
+    const closeModalAndSubmit = () => {
+        setModalVisible(false);
+        setFormSubmitted(true);
+    };
     const { events, loading, error } = EventData();
     const { id } = useParams(); // Get the eventId from the URL
+
     const [copiedLink, setCopiedLink] = useState('');
     const [showCopiedAlert, setShowCopiedAlert] = useState(false);
-    console.log(id);
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -52,65 +67,90 @@ const EventManage = () => {
             )}
             {
                 specificEvent ? (
-                    <div className='dashboard-content'>
-                        <div className="d-flex mb-5" key={specificEvent.id}>
-                            <h2>{' '}{specificEvent.eventTitle}</h2>
-                            <a href="/" className='mx-3'>Edit</a>
-                        </div>
-                        <div className="dashboard-cards">
-                            <div className="card">
-                                <div className="card-body">
-                                    <h6 className="card-subtitle text-muted">Total Available Seats</h6>
-                                    <h5 className="card-title">{' '}{specificEvent.eventTicketQuantity}</h5>
-                                    <a href="/" className="btn btn-primary">Edit Availability</a>
+                    <div className="dashboard-body">
+                        <div className='dashboard-content'>
+                            <div className="d-flex mb-5" key={specificEvent.id}>
+                                <h2>{' '}{specificEvent.eventTitle}</h2>
+                                <button className="btn btn-link" onClick={openModal}>Edit Title</button>
+                            </div>
+                            <div className="dashboard-cards">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-subtitle text-muted">Total Available Seats</h6>
+                                        <h5 className="card-title">{' '}{specificEvent.eventTicketQuantity}</h5>
+                                        <button className="btn btn-primary" onClick={openModal}>Edit Seats</button>
+                                    </div>
+                                </div>
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-subtitle text-muted">Price per Seat</h6>
+                                        <h5 className="card-title">{' '} {specificEvent.eventTicketCurrency} {specificEvent.eventTicketPrice}</h5>
+                                        <button className="btn btn-primary" onClick={openModal}>Edit Price</button>
+                                    </div>
+                                </div>
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-subtitle text-muted">Discount</h6>
+                                        <h5 className="card-title">{' '}{specificEvent.promoDiscountCode}</h5>
+                                        <button className="btn btn-primary" onClick={openModal}>Edit Discount</button>
+                                    </div>
+                                </div>
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-subtitle text-muted">RSVP Link</h6>
+                                        <h5 className="card-title">Share Your RSVP Link!</h5>
+                                        <button className="btn btn-primary" onClick={copyLinkToClipboard}>Copy Link</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="card">
-                                <div className="card-body">
-                                    <h6 className="card-subtitle text-muted">Price per Seat</h6>
-                                    <h5 className="card-title">{' '} {specificEvent.eventTicketCurrency} {specificEvent.eventTicketPrice}</h5>
-                                    <a href="/" className="btn btn-primary">Edit Pricing</a>
+                            <div className="d-flex mt-5 gap-5">
+                                <div className='dashboard-content-container event-details w-50'>
+                                    <div className='d-flex justify-content-between'>
+                                        <h3>Event Details</h3>
+                                        <div>
+                                            <button className="btn btn-primary" onClick={openModal}>Edit Details</button>
+                                            <div className='d-flex justify-content-between'>
+                                                <div className={`modal ${modalVisible ? 'show' : ''}`} tabIndex="-1" style={{ display: modalVisible ? 'block' : 'none' }} id="form-modal">
+                                                    <div className="modal-dialog modal-dialog-centered">
+                                                        <div className="modal-content">
+                                                            {/* Modal content */}
+                                                            <div className="modal-header">
+                                                                <h5 className="modal-title">Ticket Booking</h5>
+                                                                <button type="button" className="btn-close" onClick={closeModalAndSubmit}></button>
+                                                            </div>
+                                                            <div className="modal-body">
+                                                                {/* Pass a callback function to the form to handle form submission */}
+                                                                <EventsUpdateForm events={specificEvent} onSuccess={closeModalAndSubmit} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className={`modal-backdrop ${modalVisible ? 'show' : ''}`} style={{ display: modalVisible ? 'block' : 'none' }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>Type: {specificEvent.eventType}</div>
+                                    <div>Category: {specificEvent.eventCategory}</div>
+                                    <div><BsCalendar /> Start Date: {specificEvent.eventStartDate}</div>
+                                    <div><BsCalendarCheck /> End Date: {specificEvent.eventEndDate}</div>
+                                    <div><BiTime /> Timing: {specificEvent.eventStartTime} - {' '}{specificEvent.eventEndTime}</div>
+                                    <div><MdOutlineLocationOn /> Location: {specificEvent.eventVenueName}, {specificEvent.eventStreetAddress}, {specificEvent.eventCity}, {specificEvent.eventCountry}</div>
+                                </div>
+                                <div className='dashboard-content-container w-100'>
+                                    <h3>Seats Overview</h3>
+                                    <ApexChart1 eventTicketStartDate={specificEvent.eventTicketSaleStart}
+                                        attendeesCount={200}
+                                        totalSeats={specificEvent.eventTicketQuantity} />
                                 </div>
                             </div>
-                            <div className="card">
-                                <div className="card-body">
-                                    <h6 className="card-subtitle text-muted">Discount</h6>
-                                    <h5 className="card-title">{' '}{specificEvent.promoDiscountCode}</h5>
-                                    <a href="/" className="btn btn-primary">Edit Discount</a>
+                            <div className='d-flex gap-5'>
+                                <div className='dashboard-content-container w-50 mt-5'>
+                                    <h3>Total Earnings</h3>
+                                    <ApexChart2 />
                                 </div>
-                            </div>
-                            <div className="card">
-                                <div className="card-body">
-                                    <h6 className="card-subtitle text-muted">RSVP Link</h6>
-                                    <h5 className="card-title">Share Your RSVP Link!</h5>
-                                    <button className="btn btn-primary" onClick={copyLinkToClipboard}>Copy Link</button>
+                                <div className='w-50 mt-5'>
+                                    <AnnouncementForm />
                                 </div>
-                            </div>
-                        </div>
-                        <div className="d-flex mt-5 gap-5">
-                            <div className='dashboard-content-container event-details w-50'>
-                                <div className='d-flex justify-content-between'>
-                                    <h3>Event Details</h3>
-                                    <button className="btn btn-secondary">
-                                        Edit
-                                    </button>
-                                </div>
-                                <div><BsCalendarCheck /> {' '}{specificEvent.eventStartDate}</div>
-                                <div><BiTime /> {' '}{specificEvent.eventStartTime} - {' '}{specificEvent.eventEndTime}</div>
-                                <div><MdOutlineLocationOn /> {specificEvent.eventVenueName}, {specificEvent.eventCity}, {specificEvent.eventCountry}</div>
-                            </div>
-                            <div className='dashboard-content-container w-100'>
-                                <h3>Seats Overview</h3>
-                                <ApexChart1 />
-                            </div>
-                        </div>
-                        <div className='d-flex gap-5'>
-                            <div className='dashboard-content-container w-50 mt-5'>
-                                <h3>Total Earnings</h3>
-                                <ApexChart2 />
-                            </div>
-                            <div className='w-50 mt-5'>
-                                <AnnouncementForm />
                             </div>
                         </div>
                     </div>

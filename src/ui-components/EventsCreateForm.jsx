@@ -8,185 +8,21 @@
 import * as React from "react";
 import {
   Autocomplete,
-  Badge,
   Button,
-  Divider,
   Flex,
   Grid,
   Heading,
-  Icon,
-  ScrollView,
   SelectField,
   StepperField,
-  Text,
   TextAreaField,
   TextField,
   useTheme,
 } from "@aws-amplify/ui-react";
 import { StorageManager } from "@aws-amplify/ui-react-storage";
-import {
-  Field,
-  getOverrideProps,
-  useDataStoreBinding,
-} from "@aws-amplify/ui-react/internal";
-import { Events, Attendees, AttendeesEvents } from "../models";
+import { Field, getOverrideProps } from "@aws-amplify/ui-react/internal";
+import { Events } from "../models";
 import { fetchByPath, processFile, validateField } from "./utils";
 import { DataStore } from "aws-amplify";
-function ArrayField({
-  items = [],
-  onChange,
-  label,
-  inputFieldRef,
-  children,
-  hasError,
-  setFieldValue,
-  currentFieldValue,
-  defaultFieldValue,
-  lengthLimit,
-  getBadgeText,
-  runValidationTasks,
-  errorMessage,
-}) {
-  const labelElement = <Text>{label}</Text>;
-  const {
-    tokens: {
-      components: {
-        fieldmessages: { error: errorStyles },
-      },
-    },
-  } = useTheme();
-  const [selectedBadgeIndex, setSelectedBadgeIndex] = React.useState();
-  const [isEditing, setIsEditing] = React.useState();
-  React.useEffect(() => {
-    if (isEditing) {
-      inputFieldRef?.current?.focus();
-    }
-  }, [isEditing]);
-  const removeItem = async (removeIndex) => {
-    const newItems = items.filter((value, index) => index !== removeIndex);
-    await onChange(newItems);
-    setSelectedBadgeIndex(undefined);
-  };
-  const addItem = async () => {
-    const { hasError } = runValidationTasks();
-    if (
-      currentFieldValue !== undefined &&
-      currentFieldValue !== null &&
-      currentFieldValue !== "" &&
-      !hasError
-    ) {
-      const newItems = [...items];
-      if (selectedBadgeIndex !== undefined) {
-        newItems[selectedBadgeIndex] = currentFieldValue;
-        setSelectedBadgeIndex(undefined);
-      } else {
-        newItems.push(currentFieldValue);
-      }
-      await onChange(newItems);
-      setIsEditing(false);
-    }
-  };
-  const arraySection = (
-    <React.Fragment>
-      {!!items?.length && (
-        <ScrollView height="inherit" width="inherit" maxHeight={"7rem"}>
-          {items.map((value, index) => {
-            return (
-              <Badge
-                key={index}
-                style={{
-                  cursor: "pointer",
-                  alignItems: "center",
-                  marginRight: 3,
-                  marginTop: 3,
-                  backgroundColor:
-                    index === selectedBadgeIndex ? "#B8CEF9" : "",
-                }}
-                onClick={() => {
-                  setSelectedBadgeIndex(index);
-                  setFieldValue(items[index]);
-                  setIsEditing(true);
-                }}
-              >
-                {getBadgeText ? getBadgeText(value) : value.toString()}
-                <Icon
-                  style={{
-                    cursor: "pointer",
-                    paddingLeft: 3,
-                    width: 20,
-                    height: 20,
-                  }}
-                  viewBox={{ width: 20, height: 20 }}
-                  paths={[
-                    {
-                      d: "M10 10l5.09-5.09L10 10l5.09 5.09L10 10zm0 0L4.91 4.91 10 10l-5.09 5.09L10 10z",
-                      stroke: "black",
-                    },
-                  ]}
-                  ariaLabel="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    removeItem(index);
-                  }}
-                />
-              </Badge>
-            );
-          })}
-        </ScrollView>
-      )}
-      <Divider orientation="horizontal" marginTop={5} />
-    </React.Fragment>
-  );
-  if (lengthLimit !== undefined && items.length >= lengthLimit && !isEditing) {
-    return (
-      <React.Fragment>
-        {labelElement}
-        {arraySection}
-      </React.Fragment>
-    );
-  }
-  return (
-    <React.Fragment>
-      {labelElement}
-      {isEditing && children}
-      {!isEditing ? (
-        <>
-          <Button
-            onClick={() => {
-              setIsEditing(true);
-            }}
-          >
-            Add item
-          </Button>
-          {errorMessage && hasError && (
-            <Text color={errorStyles.color} fontSize={errorStyles.fontSize}>
-              {errorMessage}
-            </Text>
-          )}
-        </>
-      ) : (
-        <Flex justifyContent="flex-end">
-          {(currentFieldValue || isEditing) && (
-            <Button
-              children="Cancel"
-              type="button"
-              size="small"
-              onClick={() => {
-                setFieldValue(defaultFieldValue);
-                setIsEditing(false);
-                setSelectedBadgeIndex(undefined);
-              }}
-            ></Button>
-          )}
-          <Button size="small" variation="link" onClick={addItem}>
-            {selectedBadgeIndex !== undefined ? "Save" : "Add"}
-          </Button>
-        </Flex>
-      )}
-      {arraySection}
-    </React.Fragment>
-  );
-}
 export default function EventsCreateForm(props) {
   const {
     clearOnSuccess = true,
@@ -206,7 +42,6 @@ export default function EventsCreateForm(props) {
     eventDesc: "",
     eventAgenda: undefined,
     eventSpeakers: "",
-    eventTags: "",
     eventStartDate: "",
     eventEndDate: "",
     eventStartTime: "",
@@ -244,7 +79,6 @@ export default function EventsCreateForm(props) {
     eventImage: undefined,
     eventLogo: undefined,
     eventCodeofConduct: "",
-    attendeess: [],
   };
   const [eventTitle, setEventTitle] = React.useState(initialValues.eventTitle);
   const [eventType, setEventType] = React.useState(initialValues.eventType);
@@ -258,7 +92,6 @@ export default function EventsCreateForm(props) {
   const [eventSpeakers, setEventSpeakers] = React.useState(
     initialValues.eventSpeakers
   );
-  const [eventTags, setEventTags] = React.useState(initialValues.eventTags);
   const [eventStartDate, setEventStartDate] = React.useState(
     initialValues.eventStartDate
   );
@@ -354,7 +187,6 @@ export default function EventsCreateForm(props) {
   const [eventCodeofConduct, setEventCodeofConduct] = React.useState(
     initialValues.eventCodeofConduct
   );
-  const [attendeess, setAttendeess] = React.useState(initialValues.attendeess);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     setEventTitle(initialValues.eventTitle);
@@ -363,7 +195,6 @@ export default function EventsCreateForm(props) {
     setEventDesc(initialValues.eventDesc);
     setEventAgenda(initialValues.eventAgenda);
     setEventSpeakers(initialValues.eventSpeakers);
-    setEventTags(initialValues.eventTags);
     setEventStartDate(initialValues.eventStartDate);
     setEventEndDate(initialValues.eventEndDate);
     setEventStartTime(initialValues.eventStartTime);
@@ -401,31 +232,7 @@ export default function EventsCreateForm(props) {
     setEventImage(initialValues.eventImage);
     setEventLogo(initialValues.eventLogo);
     setEventCodeofConduct(initialValues.eventCodeofConduct);
-    setAttendeess(initialValues.attendeess);
-    setCurrentAttendeessValue(undefined);
-    setCurrentAttendeessDisplayValue("");
     setErrors({});
-  };
-  const [currentAttendeessDisplayValue, setCurrentAttendeessDisplayValue] =
-    React.useState("");
-  const [currentAttendeessValue, setCurrentAttendeessValue] =
-    React.useState(undefined);
-  const attendeessRef = React.createRef();
-  const getIDValue = {
-    attendeess: (r) => JSON.stringify({ id: r?.id }),
-  };
-  const attendeessIdSet = new Set(
-    Array.isArray(attendeess)
-      ? attendeess.map((r) => getIDValue.attendeess?.(r))
-      : getIDValue.attendeess?.(attendeess)
-  );
-  const attendeesRecords = useDataStoreBinding({
-    type: "collection",
-    model: Attendees,
-  }).items;
-  const getDisplayValue = {
-    attendeess: (r) =>
-      `${r?.attendeeName ? r?.attendeeName + " - " : ""}${r?.id}`,
   };
   const validations = {
     eventTitle: [{ type: "Required" }],
@@ -434,7 +241,6 @@ export default function EventsCreateForm(props) {
     eventDesc: [{ type: "Required" }],
     eventAgenda: [{ type: "Required" }],
     eventSpeakers: [],
-    eventTags: [],
     eventStartDate: [{ type: "Required" }],
     eventEndDate: [{ type: "Required" }],
     eventStartTime: [{ type: "Required" }],
@@ -472,7 +278,6 @@ export default function EventsCreateForm(props) {
     eventImage: [],
     eventLogo: [],
     eventCodeofConduct: [],
-    attendeess: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -523,7 +328,6 @@ export default function EventsCreateForm(props) {
           eventDesc,
           eventAgenda,
           eventSpeakers,
-          eventTags,
           eventStartDate,
           eventEndDate,
           eventStartTime,
@@ -561,28 +365,19 @@ export default function EventsCreateForm(props) {
           eventImage,
           eventLogo,
           eventCodeofConduct,
-          attendeess,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
             if (Array.isArray(modelFields[fieldName])) {
               promises.push(
                 ...modelFields[fieldName].map((item) =>
-                  runValidationTasks(
-                    fieldName,
-                    item,
-                    getDisplayValue[fieldName]
-                  )
+                  runValidationTasks(fieldName, item)
                 )
               );
               return promises;
             }
             promises.push(
-              runValidationTasks(
-                fieldName,
-                modelFields[fieldName],
-                getDisplayValue[fieldName]
-              )
+              runValidationTasks(fieldName, modelFields[fieldName])
             );
             return promises;
           }, [])
@@ -599,68 +394,7 @@ export default function EventsCreateForm(props) {
               modelFields[key] = null;
             }
           });
-          const modelFieldsToSave = {
-            eventTitle: modelFields.eventTitle,
-            eventType: modelFields.eventType,
-            eventCategory: modelFields.eventCategory,
-            eventDesc: modelFields.eventDesc,
-            eventAgenda: modelFields.eventAgenda,
-            eventSpeakers: modelFields.eventSpeakers,
-            eventTags: modelFields.eventTags,
-            eventStartDate: modelFields.eventStartDate,
-            eventEndDate: modelFields.eventEndDate,
-            eventStartTime: modelFields.eventStartTime,
-            eventEndTime: modelFields.eventEndTime,
-            eventTimeZone: modelFields.eventTimeZone,
-            eventVenueName: modelFields.eventVenueName,
-            eventCountry: modelFields.eventCountry,
-            eventStreetAddress: modelFields.eventStreetAddress,
-            eventCity: modelFields.eventCity,
-            eventState: modelFields.eventState,
-            eventZipCode: modelFields.eventZipCode,
-            eventVirtualURL: modelFields.eventVirtualURL,
-            eventTicketCurrency: modelFields.eventTicketCurrency,
-            eventTicketPrice: modelFields.eventTicketPrice,
-            eventTicketQuantity: modelFields.eventTicketQuantity,
-            eventTicketSaleStart: modelFields.eventTicketSaleStart,
-            eventTicketSaleEnd: modelFields.eventTicketSaleEnd,
-            promoLinkedin: modelFields.promoLinkedin,
-            promoTwitter: modelFields.promoTwitter,
-            promoFacebook: modelFields.promoFacebook,
-            promoInstagram: modelFields.promoInstagram,
-            promoDiscord: modelFields.promoDiscord,
-            promoDiscountType: modelFields.promoDiscountType,
-            promoDiscountAmount: modelFields.promoDiscountAmount,
-            promoDiscountCode: modelFields.promoDiscountCode,
-            promoDiscountExpiration: modelFields.promoDiscountExpiration,
-            eventCreatorName: modelFields.eventCreatorName,
-            eventCreatorHeadline: modelFields.eventCreatorHeadline,
-            eventCreatorImage: modelFields.eventCreatorImage,
-            eventCreatorBio: modelFields.eventCreatorBio,
-            orgName: modelFields.orgName,
-            orgEmail: modelFields.orgEmail,
-            orgPhone: modelFields.orgPhone,
-            orgWebsite: modelFields.orgWebsite,
-            eventImage: modelFields.eventImage,
-            eventLogo: modelFields.eventLogo,
-            eventCodeofConduct: modelFields.eventCodeofConduct,
-          };
-          const events = await DataStore.save(new Events(modelFieldsToSave));
-          const promises = [];
-          promises.push(
-            ...attendeess.reduce((promises, attendees) => {
-              promises.push(
-                DataStore.save(
-                  new AttendeesEvents({
-                    events,
-                    attendees,
-                  })
-                )
-              );
-              return promises;
-            }, [])
-          );
-          await Promise.all(promises);
+          await DataStore.save(new Events(modelFields));
           if (onSuccess) {
             onSuccess(modelFields);
           }
@@ -701,7 +435,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -739,7 +472,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTitle ?? value;
@@ -775,7 +507,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -813,7 +544,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventType ?? value;
@@ -859,7 +589,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -897,7 +626,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventCategory ?? value;
@@ -1033,7 +761,6 @@ export default function EventsCreateForm(props) {
               eventDesc: value,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -1071,7 +798,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventDesc ?? value;
@@ -1110,7 +836,6 @@ export default function EventsCreateForm(props) {
                   eventDesc,
                   eventAgenda: value,
                   eventSpeakers,
-                  eventTags,
                   eventStartDate,
                   eventEndDate,
                   eventStartTime,
@@ -1148,7 +873,6 @@ export default function EventsCreateForm(props) {
                   eventImage,
                   eventLogo,
                   eventCodeofConduct,
-                  attendeess,
                 };
                 const result = onChange(modelFields);
                 value = result?.eventAgenda ?? value;
@@ -1167,7 +891,6 @@ export default function EventsCreateForm(props) {
                   eventDesc,
                   eventAgenda: value,
                   eventSpeakers,
-                  eventTags,
                   eventStartDate,
                   eventEndDate,
                   eventStartTime,
@@ -1205,7 +928,6 @@ export default function EventsCreateForm(props) {
                   eventImage,
                   eventLogo,
                   eventCodeofConduct,
-                  attendeess,
                 };
                 const result = onChange(modelFields);
                 value = result?.eventAgenda ?? value;
@@ -1214,7 +936,7 @@ export default function EventsCreateForm(props) {
             });
           }}
           processFile={processFile}
-          accessLevel={"private"}
+          accessLevel={"public"}
           acceptedFileTypes={[".pdf"]}
           isResumable={false}
           showThumbnails={true}
@@ -1236,7 +958,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers: value,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -1274,7 +995,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventSpeakers ?? value;
@@ -1289,73 +1009,6 @@ export default function EventsCreateForm(props) {
         hasError={errors.eventSpeakers?.hasError}
         {...getOverrideProps(overrides, "eventSpeakers")}
       ></TextAreaField>
-      <TextAreaField
-        label="Tags"
-        isRequired={false}
-        isReadOnly={false}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventTags: value,
-              eventStartDate,
-              eventEndDate,
-              eventStartTime,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventVirtualURL,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketQuantity,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              eventCreatorName,
-              eventCreatorHeadline,
-              eventCreatorImage,
-              eventCreatorBio,
-              orgName,
-              orgEmail,
-              orgPhone,
-              orgWebsite,
-              eventImage,
-              eventLogo,
-              eventCodeofConduct,
-              attendeess,
-            };
-            const result = onChange(modelFields);
-            value = result?.eventTags ?? value;
-          }
-          if (errors.eventTags?.hasError) {
-            runValidationTasks("eventTags", value);
-          }
-          setEventTags(value);
-        }}
-        onBlur={() => runValidationTasks("eventTags", eventTags)}
-        errorMessage={errors.eventTags?.errorMessage}
-        hasError={errors.eventTags?.hasError}
-        {...getOverrideProps(overrides, "eventTags")}
-      ></TextAreaField>
       <Heading
         level={4}
         children="Date & Time"
@@ -1365,7 +1018,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid8")}
+        {...getOverrideProps(overrides, "RowGrid7")}
       >
         <TextField
           label={
@@ -1388,7 +1041,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate: value,
                 eventEndDate,
                 eventStartTime,
@@ -1426,7 +1078,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventStartDate ?? value;
@@ -1462,7 +1113,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate: value,
                 eventStartTime,
@@ -1500,7 +1150,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventEndDate ?? value;
@@ -1520,7 +1169,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid9")}
+        {...getOverrideProps(overrides, "RowGrid8")}
       >
         <TextField
           label={
@@ -1543,7 +1192,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime: value,
@@ -1581,7 +1229,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventStartTime ?? value;
@@ -1617,7 +1264,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -1655,7 +1301,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventEndTime ?? value;
@@ -1851,7 +1496,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -1889,7 +1533,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventTimeZone ?? value;
@@ -1914,7 +1557,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid12")}
+        {...getOverrideProps(overrides, "RowGrid11")}
       >
         <TextField
           label="Venue Name"
@@ -1931,7 +1574,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -1969,7 +1611,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventVenueName ?? value;
@@ -2787,7 +2428,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -2825,7 +2465,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventCountry ?? value;
@@ -2857,7 +2496,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -2895,7 +2533,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventStreetAddress ?? value;
@@ -2916,7 +2553,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(3, auto)"
-        {...getOverrideProps(overrides, "RowGrid14")}
+        {...getOverrideProps(overrides, "RowGrid13")}
       >
         <TextField
           label="City"
@@ -2933,7 +2570,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -2971,7 +2607,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventCity ?? value;
@@ -3001,7 +2636,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -3039,7 +2673,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventState ?? value;
@@ -3073,7 +2706,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -3111,7 +2743,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventZipCode ?? value;
@@ -3142,7 +2773,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -3180,7 +2810,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventVirtualURL ?? value;
@@ -3204,7 +2833,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(3, auto)"
-        {...getOverrideProps(overrides, "RowGrid17")}
+        {...getOverrideProps(overrides, "RowGrid16")}
       >
         <Autocomplete
           label="Currency"
@@ -3677,7 +3306,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -3715,7 +3343,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventTicketCurrency ?? value;
@@ -3752,7 +3379,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -3790,7 +3416,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventTicketPrice ?? value;
@@ -3822,7 +3447,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -3860,7 +3484,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventTicketQuantity ?? value;
@@ -3882,7 +3505,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid18")}
+        {...getOverrideProps(overrides, "RowGrid17")}
       >
         <TextField
           label="Sale Start"
@@ -3906,7 +3529,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -3944,7 +3566,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventTicketSaleStart ?? value;
@@ -3982,7 +3603,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4020,7 +3640,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventTicketSaleEnd ?? value;
@@ -4058,7 +3677,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -4096,7 +3714,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoLinkedin ?? value;
@@ -4126,7 +3743,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -4164,7 +3780,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoTwitter ?? value;
@@ -4194,7 +3809,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -4232,7 +3846,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoFacebook ?? value;
@@ -4262,7 +3875,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -4300,7 +3912,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoInstagram ?? value;
@@ -4330,7 +3941,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -4368,7 +3978,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.promoDiscord ?? value;
@@ -4387,7 +3996,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid25")}
+        {...getOverrideProps(overrides, "RowGrid24")}
       >
         <SelectField
           label="Discount Type"
@@ -4404,7 +4013,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4442,7 +4050,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.promoDiscountType ?? value;
@@ -4471,7 +4078,7 @@ export default function EventsCreateForm(props) {
           ></option>
         </SelectField>
         <TextField
-          label="Promo discount amount"
+          label="Discount Amount"
           isRequired={false}
           isReadOnly={false}
           type="number"
@@ -4489,7 +4096,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4527,7 +4133,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.promoDiscountAmount ?? value;
@@ -4549,10 +4154,10 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid26")}
+        {...getOverrideProps(overrides, "RowGrid25")}
       >
         <TextField
-          label="Promo discount code"
+          label="Discount Code"
           isRequired={false}
           isReadOnly={false}
           value={promoDiscountCode}
@@ -4566,7 +4171,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4604,7 +4208,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.promoDiscountCode ?? value;
@@ -4622,7 +4225,7 @@ export default function EventsCreateForm(props) {
           {...getOverrideProps(overrides, "promoDiscountCode")}
         ></TextField>
         <TextField
-          label="Promo discount expiration"
+          label="Discount Expiration"
           isRequired={false}
           isReadOnly={false}
           type="datetime-local"
@@ -4643,7 +4246,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4681,7 +4283,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.promoDiscountExpiration ?? value;
@@ -4711,7 +4312,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid28")}
+        {...getOverrideProps(overrides, "RowGrid27")}
       >
         <TextField
           label={
@@ -4733,7 +4334,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4771,7 +4371,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventCreatorName ?? value;
@@ -4808,7 +4407,6 @@ export default function EventsCreateForm(props) {
                 eventDesc,
                 eventAgenda,
                 eventSpeakers,
-                eventTags,
                 eventStartDate,
                 eventEndDate,
                 eventStartTime,
@@ -4846,7 +4444,6 @@ export default function EventsCreateForm(props) {
                 eventImage,
                 eventLogo,
                 eventCodeofConduct,
-                attendeess,
               };
               const result = onChange(modelFields);
               value = result?.eventCreatorHeadline ?? value;
@@ -4883,7 +4480,6 @@ export default function EventsCreateForm(props) {
                   eventDesc,
                   eventAgenda,
                   eventSpeakers,
-                  eventTags,
                   eventStartDate,
                   eventEndDate,
                   eventStartTime,
@@ -4921,7 +4517,6 @@ export default function EventsCreateForm(props) {
                   eventImage,
                   eventLogo,
                   eventCodeofConduct,
-                  attendeess,
                 };
                 const result = onChange(modelFields);
                 value = result?.eventCreatorImage ?? value;
@@ -4940,7 +4535,6 @@ export default function EventsCreateForm(props) {
                   eventDesc,
                   eventAgenda,
                   eventSpeakers,
-                  eventTags,
                   eventStartDate,
                   eventEndDate,
                   eventStartTime,
@@ -4978,7 +4572,6 @@ export default function EventsCreateForm(props) {
                   eventImage,
                   eventLogo,
                   eventCodeofConduct,
-                  attendeess,
                 };
                 const result = onChange(modelFields);
                 value = result?.eventCreatorImage ?? value;
@@ -5009,7 +4602,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -5047,7 +4639,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCreatorBio ?? value;
@@ -5082,7 +4673,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -5120,7 +4710,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgName ?? value;
@@ -5155,7 +4744,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -5193,7 +4781,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgEmail ?? value;
@@ -5229,7 +4816,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -5267,7 +4853,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgPhone ?? value;
@@ -5297,7 +4882,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -5335,7 +4919,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.orgWebsite ?? value;
@@ -5359,7 +4942,7 @@ export default function EventsCreateForm(props) {
         columnGap="inherit"
         rowGap="inherit"
         templateColumns="repeat(2, auto)"
-        {...getOverrideProps(overrides, "RowGrid37")}
+        {...getOverrideProps(overrides, "RowGrid36")}
       >
         <Field
           errorMessage={errors.eventImage?.errorMessage}
@@ -5380,7 +4963,6 @@ export default function EventsCreateForm(props) {
                     eventDesc,
                     eventAgenda,
                     eventSpeakers,
-                    eventTags,
                     eventStartDate,
                     eventEndDate,
                     eventStartTime,
@@ -5418,7 +5000,6 @@ export default function EventsCreateForm(props) {
                     eventImage: value,
                     eventLogo,
                     eventCodeofConduct,
-                    attendeess,
                   };
                   const result = onChange(modelFields);
                   value = result?.eventImage ?? value;
@@ -5437,7 +5018,6 @@ export default function EventsCreateForm(props) {
                     eventDesc,
                     eventAgenda,
                     eventSpeakers,
-                    eventTags,
                     eventStartDate,
                     eventEndDate,
                     eventStartTime,
@@ -5475,7 +5055,6 @@ export default function EventsCreateForm(props) {
                     eventImage: value,
                     eventLogo,
                     eventCodeofConduct,
-                    attendeess,
                   };
                   const result = onChange(modelFields);
                   value = result?.eventImage ?? value;
@@ -5495,7 +5074,7 @@ export default function EventsCreateForm(props) {
         <Field
           errorMessage={errors.eventLogo?.errorMessage}
           hasError={errors.eventLogo?.hasError}
-          label={"Event logo"}
+          label={"Event Logo"}
           isRequired={false}
           isReadOnly={false}
         >
@@ -5511,7 +5090,6 @@ export default function EventsCreateForm(props) {
                     eventDesc,
                     eventAgenda,
                     eventSpeakers,
-                    eventTags,
                     eventStartDate,
                     eventEndDate,
                     eventStartTime,
@@ -5549,7 +5127,6 @@ export default function EventsCreateForm(props) {
                     eventImage,
                     eventLogo: value,
                     eventCodeofConduct,
-                    attendeess,
                   };
                   const result = onChange(modelFields);
                   value = result?.eventLogo ?? value;
@@ -5568,7 +5145,6 @@ export default function EventsCreateForm(props) {
                     eventDesc,
                     eventAgenda,
                     eventSpeakers,
-                    eventTags,
                     eventStartDate,
                     eventEndDate,
                     eventStartTime,
@@ -5606,7 +5182,6 @@ export default function EventsCreateForm(props) {
                     eventImage,
                     eventLogo: value,
                     eventCodeofConduct,
-                    attendeess,
                   };
                   const result = onChange(modelFields);
                   value = result?.eventLogo ?? value;
@@ -5638,7 +5213,6 @@ export default function EventsCreateForm(props) {
               eventDesc,
               eventAgenda,
               eventSpeakers,
-              eventTags,
               eventStartDate,
               eventEndDate,
               eventStartTime,
@@ -5676,7 +5250,6 @@ export default function EventsCreateForm(props) {
               eventImage,
               eventLogo,
               eventCodeofConduct: value,
-              attendeess,
             };
             const result = onChange(modelFields);
             value = result?.eventCodeofConduct ?? value;
@@ -5693,126 +5266,6 @@ export default function EventsCreateForm(props) {
         hasError={errors.eventCodeofConduct?.hasError}
         {...getOverrideProps(overrides, "eventCodeofConduct")}
       ></TextAreaField>
-      <ArrayField
-        onChange={async (items) => {
-          let values = items;
-          if (onChange) {
-            const modelFields = {
-              eventTitle,
-              eventType,
-              eventCategory,
-              eventDesc,
-              eventAgenda,
-              eventSpeakers,
-              eventTags,
-              eventStartDate,
-              eventEndDate,
-              eventStartTime,
-              eventEndTime,
-              eventTimeZone,
-              eventVenueName,
-              eventCountry,
-              eventStreetAddress,
-              eventCity,
-              eventState,
-              eventZipCode,
-              eventVirtualURL,
-              eventTicketCurrency,
-              eventTicketPrice,
-              eventTicketQuantity,
-              eventTicketSaleStart,
-              eventTicketSaleEnd,
-              promoLinkedin,
-              promoTwitter,
-              promoFacebook,
-              promoInstagram,
-              promoDiscord,
-              promoDiscountType,
-              promoDiscountAmount,
-              promoDiscountCode,
-              promoDiscountExpiration,
-              eventCreatorName,
-              eventCreatorHeadline,
-              eventCreatorImage,
-              eventCreatorBio,
-              orgName,
-              orgEmail,
-              orgPhone,
-              orgWebsite,
-              eventImage,
-              eventLogo,
-              eventCodeofConduct,
-              attendeess: values,
-            };
-            const result = onChange(modelFields);
-            values = result?.attendeess ?? values;
-          }
-          setAttendeess(values);
-          setCurrentAttendeessValue(undefined);
-          setCurrentAttendeessDisplayValue("");
-        }}
-        currentFieldValue={currentAttendeessValue}
-        label={"Attendees"}
-        items={attendeess}
-        hasError={errors?.attendeess?.hasError}
-        runValidationTasks={async () =>
-          await runValidationTasks("attendeess", currentAttendeessValue)
-        }
-        errorMessage={errors?.attendeess?.errorMessage}
-        getBadgeText={getDisplayValue.attendeess}
-        setFieldValue={(model) => {
-          setCurrentAttendeessDisplayValue(
-            model ? getDisplayValue.attendeess(model) : ""
-          );
-          setCurrentAttendeessValue(model);
-        }}
-        inputFieldRef={attendeessRef}
-        defaultFieldValue={""}
-      >
-        <Autocomplete
-          label="Attendees"
-          isRequired={false}
-          isReadOnly={false}
-          placeholder="Search Attendees"
-          value={currentAttendeessDisplayValue}
-          options={attendeesRecords
-            .filter((r) => !attendeessIdSet.has(getIDValue.attendeess?.(r)))
-            .map((r) => ({
-              id: getIDValue.attendeess?.(r),
-              label: getDisplayValue.attendeess?.(r),
-            }))}
-          onSelect={({ id, label }) => {
-            setCurrentAttendeessValue(
-              attendeesRecords.find((r) =>
-                Object.entries(JSON.parse(id)).every(
-                  ([key, value]) => r[key] === value
-                )
-              )
-            );
-            setCurrentAttendeessDisplayValue(label);
-            runValidationTasks("attendeess", label);
-          }}
-          onClear={() => {
-            setCurrentAttendeessDisplayValue("");
-          }}
-          onChange={(e) => {
-            let { value } = e.target;
-            if (errors.attendeess?.hasError) {
-              runValidationTasks("attendeess", value);
-            }
-            setCurrentAttendeessDisplayValue(value);
-            setCurrentAttendeessValue(undefined);
-          }}
-          onBlur={() =>
-            runValidationTasks("attendeess", currentAttendeessDisplayValue)
-          }
-          errorMessage={errors.attendeess?.errorMessage}
-          hasError={errors.attendeess?.hasError}
-          ref={attendeessRef}
-          labelHidden={true}
-          {...getOverrideProps(overrides, "attendeess")}
-        ></Autocomplete>
-      </ArrayField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

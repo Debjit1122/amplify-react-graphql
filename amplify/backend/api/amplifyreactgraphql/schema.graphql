@@ -24,7 +24,6 @@ type Events @model @auth(rules: [{allow: owner}]) {
   eventTitle: String
   eventType: String
   eventCategory: String
-  eventTags: String
   eventStartDate: AWSDate
   eventStartTime: AWSTime
   eventDesc: String
@@ -55,7 +54,6 @@ type Events @model @auth(rules: [{allow: owner}]) {
   promoDiscountExpiration: AWSDateTime
   orgName: String
   orgEmail: AWSEmail
-  orgCountryCode: String
   orgPhone: AWSPhone
   orgWebsite: AWSURL
   eventCodeofConduct: String

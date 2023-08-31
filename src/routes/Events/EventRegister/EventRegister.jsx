@@ -9,9 +9,9 @@ import { GiTicket } from "react-icons/gi"
 import { TfiAgenda } from "react-icons/tfi"
 import { BsFillChatLeftDotsFill, BsInfoCircle } from "react-icons/bs"
 import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaDiscord } from 'react-icons/fa'
-import { BiSupport } from "react-icons/bi"
+import { BiGroup, BiSupport, BiTime } from "react-icons/bi"
 import { Storage } from 'aws-amplify';
-import { MdEmail, MdPhone } from 'react-icons/md';
+import { MdEmail, MdGroup, MdPhone } from 'react-icons/md';
 import { AttendeesCreateForm } from "../../../ui-components"
 const EventRegister = () => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -132,6 +132,32 @@ const EventRegister = () => {
                                         <p><MdEmail /> {specificEvent.orgEmail}</p>
                                         <p><MdPhone /> {specificEvent.orgPhone}</p>
                                     </section>
+                                    <section>
+                                        <div>
+                                            {/* Button trigger modal */}
+                                            <button type="button" className="btn btn-link" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                                <h3>Code of Conduct <MdGroup size={35} /></h3>
+                                            </button>
+                                            {/* Modal */}
+                                            <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex={-1} aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                <div className="modal-dialog">
+                                                    <div className="modal-content">
+                                                        <div className="modal-header">
+                                                            <h1 className="modal-title fs-5" id="staticBackdropLabel">Code of Conduct</h1>
+                                                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                                                        </div>
+                                                        <div className="modal-body">
+                                                            {specificEvent.eventCodeofConduct}
+                                                        </div>
+                                                        <div className="modal-footer">
+                                                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="button" className="btn btn-primary">Understood</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
                                 </div>
 
                                 <div className="col-md-4 d-flex flex-column align-items-center">
@@ -185,6 +211,9 @@ const EventRegister = () => {
                                             <button className="btn btn-lg btn-primary" onClick={openModal}>Get tickets <GiTicket size={28} /></button>
                                         </div>
                                     </section>
+                                    <section className='time-container'>
+                                        <BiTime /> From {specificEvent.eventStartTime} till {specificEvent.eventEndTime} ({specificEvent.eventTimeZone})
+                                    </section>
                                     <section className="calendar-container">
                                         <h3 className='mb-3'>Schedule <GrSchedules /></h3>
                                         <Calendar selectRange value={[specificEvent.eventStartDate, specificEvent.eventEndDate]} onChange={() => { }} />
@@ -209,7 +238,7 @@ const EventRegister = () => {
                                         </div>
                                     </section>
                                     {/* Modal */}
-                                    <div className={`modal ${modalVisible ? 'show' : ''}`} tabIndex="-1" style={{ display: modalVisible ? 'block' : 'none' }} id="reg-modal">
+                                    <div className={`modal ${modalVisible ? 'show' : ''}`} tabIndex="-1" style={{ display: modalVisible ? 'block' : 'none' }} id="form-modal">
                                         <div className="modal-dialog modal-dialog-centered">
                                             <div className="modal-content">
                                                 {/* Modal content */}
@@ -231,7 +260,7 @@ const EventRegister = () => {
 
                         <footer className="footer mt-auto py-3 bg-dark">
                             <div className="container text-center">
-                                <p className="footer-text">
+                                <p className="footer-text text-white">
                                     &copy; 2023 Uniteopia | <a href="/" className="footer-link">Privacy Policy</a>
                                 </p>
                             </div>

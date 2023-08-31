@@ -47,40 +47,37 @@ const Events = () => {
     return (
         <div>
             <div className="dashboard-content">
-                <div className="dashboard-content-container">
-                    <h2 className='text-center'>My Events</h2>
-                    {events.map((event) => (
-                        <div className="card events-card" key={event.id}>
-                            <div className="card-image">
-                                <img
-                                    src={eventImages[event.id] || 'https://via.placeholder.com/300'}
-                                    className="card-img-top"
-                                    alt="Event"
-                                />
-                            </div>
-                            <div className="card-details">
-                                <h5 className="card-title">{event.eventTitle}</h5>
-                                <div className="event-details">
-                                    <p className="card-text">
-                                        <FaCalendarAlt /> {event.eventStartDate}
-                                    </p>
-                                    <p className="card-text">
-                                        <FaClock /> {event.eventStartTime} - {event.eventEndTime}
-                                    </p>
-                                    <p className="card-text">
-                                        <FaMapMarkerAlt /> {event.eventVenueName}, {event.eventCity}, {event.eventCountry}
-                                    </p>
-                                </div>
-                                <Link
-                                    to={`/dashboard/events/manage/${event.id}`}
-                                    className="btn btn-primary"
-                                >
-                                    <div>View Details</div>
-                                </Link>
-                            </div>
+                {events.map((event) => (
+                    <div className="card events-card" key={event.id}>
+                        <div className="card-image">
+                            <img
+                                src={eventImages[event.id] || 'https://via.placeholder.com/300'}
+                                className="card-img-top"
+                                alt="Event"
+                            />
                         </div>
-                    ))}
-                </div>
+                        <div className="card-details">
+                            <h5 className="card-title">{event.eventTitle}</h5>
+                            <div className="event-details">
+                                <p className="card-text">
+                                    <FaCalendarAlt /> {event.eventStartDate}
+                                </p>
+                                <p className="card-text">
+                                    <FaClock /> {event.eventStartTime} - {event.eventEndTime}
+                                </p>
+                                <p className="card-text">
+                                    <FaMapMarkerAlt /> {event.eventVenueName}, {event.eventCity}, {event.eventCountry}
+                                </p>
+                            </div>
+                            <Link
+                                to={`/dashboard/events/manage/${event.id}`}
+                                className="btn btn-primary"
+                            >
+                                <div>View Details</div>
+                            </Link>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );

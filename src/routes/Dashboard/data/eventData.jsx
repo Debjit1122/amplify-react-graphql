@@ -13,8 +13,8 @@ function EventData() {
             try {
                 const { username } = await Auth.currentAuthenticatedUser();
                 const eventsData = await DataStore.query(Events, (c) => c.owner.eq(username));
-                console.log(eventsData);
                 setEvents(eventsData);
+                console.log(eventsData);
                 setLoading(false);
             } catch (error) {
                 setError(error);
