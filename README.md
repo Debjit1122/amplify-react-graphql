@@ -16,6 +16,8 @@ The Uniteopia Event Management Web App is a full-stack application built on AWS 
 - [Getting Started](#getting-started)
 - [Technologies Used](#technologies-used)
 - [Future Enhancements](#future-enhancements)
+- [Contributing](#contributing)
+- [License](#license)
 - [Contact](#contact)
 
 ## Features
@@ -67,6 +69,14 @@ The Uniteopia Event Management Web App is an ongoing project with plans for futu
 - **Enhanced Dashboard:** Expanding the dashboard's capabilities with advanced event management tools, analytics, and reporting.
 - **Mobile Accessibility:** Ensuring a seamless experience for event managers and attendees on all devices.
 - **Attendee Management:** Adding features to manage event attendees, track registrations, and improve the event experience.
+
+## Contributing
+
+We welcome contributions from the community to improve Uniteopia. To contribute, please follow our [Contributing Guidelines](CONTRIBUTING.md).
+
+## License
+
+Uniteopia is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
