@@ -6,8 +6,8 @@ The Uniteopia Event Management Web App is a full-stack application built on AWS 
 
 ## Demo
 
-[![Event Management Web App with Amplify Studio, React, and GraphQL] 
-(https://www.youtube.com/watch?v=7wRXxm4Bxe0 "Event Management Web App with Amplify Studio, React, and GraphQL")   
+[![Watch the demo](https://img.youtube.com/vi/7wRXxm4Bxe0/0.jpg)](https://www.youtube.com/watch?v=7wRXxm4Bxe0)
+
 
 ## Table of Contents
 
