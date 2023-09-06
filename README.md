@@ -44,8 +44,3 @@ We welcome contributions from the community to enhance Uniteopia. To get involve
 ## License
 
 Uniteopia is licensed under the [MIT License](LICENSE).
-
-## Contact
-
-For inquiries or feedback, please contact the project creator:
-- **LinkedIn:** [Debjit Dey](https://www.linkedin.com/in/debjitdey/)
