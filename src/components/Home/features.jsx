@@ -22,7 +22,7 @@ export const Features = (props) => {
                 </div>
               </div>
             ))
-            : "loading"}
+            : "loading.."}
         </div>
       </div>
     </div>
