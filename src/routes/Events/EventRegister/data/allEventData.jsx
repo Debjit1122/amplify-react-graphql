@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DataStore, Storage } from 'aws-amplify';
+import { DataStore } from 'aws-amplify';
 import { Events } from '../../../../models';
 
 function AllEventData() {

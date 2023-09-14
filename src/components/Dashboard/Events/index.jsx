@@ -46,7 +46,7 @@ const Events = () => {
 
     return (
         <div>
-            <div className="dashboard-content">
+            <div className="dashboard-content d-flex gap-5">
                 {events.map((event) => (
                     <div className="card events-card" key={event.id}>
                         <div className="card-image">

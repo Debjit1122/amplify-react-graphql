@@ -9,7 +9,7 @@ import { GiTicket } from "react-icons/gi"
 import { TfiAgenda } from "react-icons/tfi"
 import { BsFillChatLeftDotsFill, BsInfoCircle } from "react-icons/bs"
 import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaDiscord } from 'react-icons/fa'
-import { BiGroup, BiSupport, BiTime } from "react-icons/bi"
+import { BiSupport, BiTime } from "react-icons/bi"
 import { Storage } from 'aws-amplify';
 import { MdEmail, MdGroup, MdPhone } from 'react-icons/md';
 import { AttendeesCreateForm } from "../../../ui-components"

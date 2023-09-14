@@ -1,8 +1,6 @@
-import React, {useState} from "react";
 import { Link } from 'react-router-dom';
 
 const SideBarItem = ({ item, active }) => {
-    const [hover, setHover] = useState(false);
     return (
         <Link 
             to={item.path} 

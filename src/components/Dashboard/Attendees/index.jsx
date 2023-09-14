@@ -38,7 +38,7 @@ function Attendees() {
 
     return (
         <div className='dashboard-content'>
-            <div className='dashboard-content-container'>
+            {/* <div className='dashboard-content-container'>
                 <div className='dashboard-content-header'>
                     <h2>Attendees</h2>
                     <div className='dashboard-content-search'>
@@ -133,7 +133,10 @@ function Attendees() {
                         <span className='empty-table'>No data</span>
                     </div>
                 )}
-            </div>
+            </div> */}
+            <h1 className="text-center text-muted">
+                Coming Soon...
+            </h1>
         </div>
     );
 }

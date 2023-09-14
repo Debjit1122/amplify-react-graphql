@@ -28,28 +28,28 @@ const Main = () => {
                 <div className="card">
                     <div className="card-body">
                         <h6 className="card-subtitle text-muted">Total Events Created</h6>
-                        <h5 className="card-title">20</h5>
+                        <h5 className="card-title"></h5>
                         <a href="/" className="btn btn-primary">See all events</a>
                     </div>
                 </div>
                 <div className="card">
                     <div className="card-body">
                         <h6 className="card-subtitle text-muted">Total Attendees</h6>
-                        <h5 className="card-title">600</h5>
+                        <h5 className="card-title"></h5>
                         <a href="/" className="btn btn-primary">See all Attendees</a>
                     </div>
                 </div>
                 <div className="card">
                     <div className="card-body">
                         <h6 className="card-subtitle text-muted">Total Revenue Earning</h6>
-                        <h5 className="card-title">$20000</h5>
+                        <h5 className="card-title"></h5>
                         <a href="/" className="btn btn-primary">See all earnings</a>
                     </div>
                 </div>
                 <div className="card">
                     <div className="card-body">
                         <h6 className="card-subtitle text-muted">Average Rating</h6>
-                        <h5 className="card-title">4.5</h5>
+                        <h5 className="card-title"></h5>
                         <a href="/" className="btn btn-primary">See all ratings</a>
                     </div>
                 </div>

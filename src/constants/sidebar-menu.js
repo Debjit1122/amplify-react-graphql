@@ -1,6 +1,7 @@
 // constants/sidebar-menu.js
 import DashboardIcon from '../assets/icons/dashboard.svg';
 import UserIcon from '../assets/icons/user.svg';
+import EventsIcon from '../assets/icons/calendar.png'
 
 const sidebar_menu = [
     {
@@ -17,7 +18,7 @@ const sidebar_menu = [
     },
     {
         id: 3,
-        icon: UserIcon,
+        icon: EventsIcon,
         path: '/dashboard/events',
         title: 'Events',
     }

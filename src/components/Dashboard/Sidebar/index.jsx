@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
 import SideBarItem from './sidebar-item';
 import { BiLogOut } from 'react-icons/bi';
-import logoTransparent from "../../../assets/images/logo-transparent.png"
+import { RiCalendar2Line } from 'react-icons/ri';
 
 function SideBar({ menu, signOut, open, closeSidebar }) {
     const location = useLocation();
@@ -28,8 +28,10 @@ function SideBar({ menu, signOut, open, closeSidebar }) {
                 <div className='sidebar-toggle-button' onClick={closeSidebar}>
                     <FaTimes size={18} />
                 </div>
-                <div className='sidebar-logo-container d-flex'>
-                    <img src={logoTransparent} alt="" />
+                <div className='sidebar-logo-container d-flex p-3'>
+                    <a className="navbar-brand" href="/">
+                        <h1 id="logo-white">Eventify <RiCalendar2Line /></h1>
+                    </a>
                 </div>
 
                 <div className='sidebar-items'>
@@ -44,7 +46,7 @@ function SideBar({ menu, signOut, open, closeSidebar }) {
 
                 <div className='sidebar-footer'>
                     <span className='sidebar-item-label'>Logout</span>
-                    <BiLogOut onClick={signOut}/>
+                    <BiLogOut onClick={signOut} />
                 </div>
             </div>
         </nav>

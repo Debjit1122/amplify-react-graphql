@@ -6,17 +6,9 @@ import { Features } from "../../components/Home/features";
 import { Testimonials } from "../../components/Home/testimonials";
 import { Contact } from "../../components/Home/contact";
 import JsonData from "./data/data.json";
-import SmoothScroll from "smooth-scroll"; // Make sure you have installed the smooth-scroll library
 import "./Home.css";
 import { Link } from "react-router-dom";
-import { RiMenu3Fill } from "react-icons/ri"
-import logo from "../../assets/images/logo.png"
-
-// Initialize Smooth Scroll with options
-const scroll = new SmoothScroll('a[href*="#"]', {
-    speed: 500,
-    speedAsDuration: true,
-});
+import { RiMenu3Fill, RiCalendar2Line } from "react-icons/ri"
 
 const Home = () => {
     const [landingPageData, setLandingPageData] = useState({});
@@ -30,7 +22,7 @@ const Home = () => {
             <nav className="navbar fixed-top navbar-expand-lg nanbar-light">
                 <div className="container-fluid">
                     <a className="navbar-brand" href="/">
-                        <img src={logo} alt="" />
+                        <h1 id="logo-color">Eventify <RiCalendar2Line /></h1>
                     </a>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <RiMenu3Fill size={30} style={{ color: "hsl(190, 100%, 20%)" }} />

@@ -1,6 +1,6 @@
 /* font-family*/
 @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
 body {
   margin: 0;
@@ -56,6 +56,18 @@ code {
 
 .btn-link:active {
   color: hsl(210, 25%, 25%)!important;
+}
+
+#logo-white {
+  color: #fff;
+  font-family: 'Pacifico', cursive;
+  font-size: 28px;
+}
+
+#logo-color {
+  color: hsl(190, 100%, 20%);
+  font-family: 'Pacifico', cursive;
+  font-size: 28px;
 }
 
 h2 {

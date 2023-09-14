@@ -138,15 +138,17 @@ const EventManage = () => {
                                 </div>
                                 <div className='dashboard-content-container w-100'>
                                     <h3>Seats Overview</h3>
-                                    <ApexChart1 eventTicketStartDate={specificEvent.eventTicketSaleStart}
+                                    {/* <ApexChart1 eventTicketStartDate={specificEvent.eventTicketSaleStart}
                                         attendeesCount={200}
-                                        totalSeats={specificEvent.eventTicketQuantity} />
+                                        totalSeats={specificEvent.eventTicketQuantity} /> */}
+                                    <h2 className='text-muted'>Coming Soon...</h2>
                                 </div>
                             </div>
                             <div className='d-flex gap-5'>
                                 <div className='dashboard-content-container w-50 mt-5'>
                                     <h3>Total Earnings</h3>
-                                    <ApexChart2 />
+                                    {/* <ApexChart2 /> */}
+                                    <h2 className='text-muted'>Coming Soon...</h2>
                                 </div>
                                 <div className='w-50 mt-5'>
                                     <AnnouncementForm />
