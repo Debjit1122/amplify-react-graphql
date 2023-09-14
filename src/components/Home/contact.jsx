@@ -149,7 +149,7 @@ export const Contact = (props) => {
       <div id="footer">
         <div className="container text-center">
           <p>
-            &copy; 2023 Uniteopia | All rights reserved
+            &copy; 2023 Eventify | All rights reserved
           </p>
         </div>
       </div>

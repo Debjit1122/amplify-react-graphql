@@ -261,7 +261,7 @@ const EventRegister = () => {
                         <footer className="footer mt-auto py-3 bg-dark">
                             <div className="container text-center">
                                 <p className="footer-text text-white">
-                                    &copy; 2023 Uniteopia | <a href="/" className="footer-link">Privacy Policy</a>
+                                    &copy; 2023 Eventify | <a href="/" className="footer-link">Privacy Policy</a>
                                 </p>
                             </div>
                         </footer>
