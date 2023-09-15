@@ -48,8 +48,7 @@ const Events = () => {
         <div>
             <div className="dashboard-content">
                 {events.map((event) => (
-                    <div className='d-flex gap-5'>
-                       <div className="card events-card" key={event.id}>
+                    <div className="card events-card" key={event.id}>
                         <div className="card-image">
                             <img
                                 src={eventImages[event.id] || 'https://via.placeholder.com/300'}
@@ -77,8 +76,8 @@ const Events = () => {
                                 <div>View Details</div>
                             </Link>
                         </div>
-                    </div> 
-                    </div>  
+                    </div>
+
                 ))}
             </div>
         </div>

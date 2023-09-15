@@ -14,8 +14,8 @@
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
-    "emailVerificationSubject": "Welcome to Gatherhub - Verify Your Account!",
-    "emailVerificationMessage": "<p>Welcome to Uniteopia, the place where events transform into unforgettable experiences. Ready to dive right in? Just verify your account, and we're set to roll!</p> <p> Account Verification: Your security is our top concern. Confirm your account to ensure authenticity. Your verification code:</p> <br/> Your verification code is <strong><em>{####}</em></strong> <br/> <p>Access Your Account: Once verified, use your credentials to log in and explore the array of features, we offer.</p> <p> We appreciate you choosing Uniteopia for your event management needs. Your creative journey awaits! If you have any questions, reach out to us at uniteopia@gmail.com. <br/> Best regards,<br/> The Uniteopia Team </p> <br/> <small>",
+    "emailVerificationSubject": "Welcome to Eventify - Verify Your Account!",
+    "emailVerificationMessage": "<p>Welcome to Eventify, the place where events transform into unforgettable experiences. Ready to dive right in? Just verify your account, and we're set to roll!</p> <p> Account Verification: Your security is our top concern. Confirm your account to ensure authenticity. Your verification code:</p> <br/> Your verification code is <strong><em>{####}</em></strong> <br/> <p>Access Your Account: Once verified, use your credentials to log in and explore the array of features, we offer.</p> <p> We appreciate you choosing Eventify for your event management needs. Your creative journey awaits! If you have any questions, reach out to us at eventify@gmail.com. <br/> Best regards,<br/> The Eventify Team </p> <br/> <small>",
     "defaultPasswordPolicy": false,
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [

@@ -331,8 +331,8 @@ td span {
   background-color: #fff;
   margin: 10px;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-around;
+  flex-wrap: wrap;
 }
 
 .events-card:hover {

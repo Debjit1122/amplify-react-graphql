@@ -1,5 +1,5 @@
 import React from 'react'
-import { BsCalendarCheck } from "react-icons/bs"
+import { BsCalendar, BsCalendarCheck } from "react-icons/bs"
 import { BiTime } from "react-icons/bi"
 import { MdOutlineLocationOn } from "react-icons/md"
 import EventData from '../../../routes/Dashboard/data/eventData'
@@ -24,7 +24,7 @@ const Main = () => {
 
     return (
         <div className='dashboard-content'>
-            <div className="dashboard-cards">
+            {/* <div className="dashboard-cards">
                 <div className="card">
                     <div className="card-body">
                         <h6 className="card-subtitle text-muted">Total Events Created</h6>
@@ -53,29 +53,28 @@ const Main = () => {
                         <a href="/" className="btn btn-primary">See all ratings</a>
                     </div>
                 </div>
-            </div>
+            </div> */}
             <div className='dashboard-content-container upcoming-events'>
-                <div className='d-flex justify-content-between'>
-                    <h3>Upcoming Events</h3>
-                    <div className="dropdown">
-                        <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown button
-                        </button>
-                        <ul className="dropdown-menu">
-                            <li><a className="dropdown-item" href="/">Action</a></li>
-                            <li><a className="dropdown-item" href="/">Another action</a></li>
-                            <li><a className="dropdown-item" href="/">Something else here</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <table>
+                <table className='table-striped'>
+                    <thead>
+                        <th className='h5 text-black'>Event Name</th>
+                        <th className='h5 text-black'>Starts <BsCalendar /></th>
+                        <th className='h5 text-black'>Ends <BsCalendarCheck /></th>
+                        <th className='h5 text-black'>Schedule <BiTime /></th>
+                        <th className='h5 text-black'>Type</th>
+                        <th className='h5 text-black'>Category</th>
+                        <th className='h5 text-black'>Location <MdOutlineLocationOn /></th>
+                    </thead>
                     <tbody>
                         {events.map(event => (
                             <tr key={event.id}>
-                                <td><BsCalendarCheck />{' '}{event.eventStartDate}</td>
                                 <td>{event.eventTitle}</td>
-                                <td><BiTime />{' '}{event.eventStartTime}</td>
-                                <td><MdOutlineLocationOn />{' '}{event.eventVenueName}, {event.eventCity}, {event.eventCountry}</td>
+                                <td>{' '}{event.eventStartDate}</td>
+                                <td>{' '} {event.eventEndDate}</td>
+                                <td><BiTime />{' '}{event.eventStartTime} - {event.eventEndTime}</td>
+                                <td>{' '} {event.eventType}</td>
+                                <td>{' '}{event.eventCategory}</td>
+                                <td>{' '}{event.eventVenueName}, {event.eventCity}, {event.eventCountry}</td>
                             </tr>
                         ))}
                     </tbody>
