@@ -136,24 +136,22 @@ const EventManage = () => {
                                     <div><BiTime /> Timing: {specificEvent.eventStartTime} - {' '}{specificEvent.eventEndTime}</div>
                                     <div><MdOutlineLocationOn /> Location: {specificEvent.eventVenueName}, {specificEvent.eventStreetAddress}, {specificEvent.eventCity}, {specificEvent.eventCountry}</div>
                                 </div>
-                                <div className='dashboard-content-container w-100'>
+                                {/* <div className='dashboard-content-container w-100'>
                                     <h3>Seats Overview</h3>
-                                    {/* <ApexChart1 eventTicketStartDate={specificEvent.eventTicketSaleStart}
+                                    <ApexChart1 eventTicketStartDate={specificEvent.eventTicketSaleStart}
                                         attendeesCount={200}
-                                        totalSeats={specificEvent.eventTicketQuantity} /> */}
-                                    <h2 className='text-muted'>Coming Soon...</h2>
-                                </div>
+                                        totalSeats={specificEvent.eventTicketQuantity} />
+                                </div> */}
                             </div>
-                            <div className='d-flex gap-5'>
+                            {/* <div className='d-flex gap-5'>
                                 <div className='dashboard-content-container w-50 mt-5'>
                                     <h3>Total Earnings</h3>
-                                    {/* <ApexChart2 /> */}
-                                    <h2 className='text-muted'>Coming Soon...</h2>
+                                    <ApexChart2 />
                                 </div>
                                 <div className='w-50 mt-5'>
                                     <AnnouncementForm />
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 ) : (

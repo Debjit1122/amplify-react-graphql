@@ -55,6 +55,7 @@ const Main = () => {
                 </div>
             </div> */}
             <div className='dashboard-content-container upcoming-events'>
+                <h2>Upcoming Events</h2>
                 <table className='table-striped'>
                     <thead>
                         <th className='h5 text-black'>Event Name</th>

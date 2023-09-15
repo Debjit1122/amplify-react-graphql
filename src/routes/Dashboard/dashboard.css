@@ -323,16 +323,12 @@ td span {
 }
 
 .events-card {
-  width: 300px;
   border: none;
   border-radius: 6px;
   overflow: hidden;
   transition: transform 0.3s, box-shadow 0.3s;
   background-color: #fff;
   margin: 10px;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
 }
 
 .events-card:hover {
